@@ -1,0 +1,24 @@
+{
+  "originHash" : "443e931dd4427db2a696227b217794e622f4a3bd446ca61e660e0fe06d5a80c0",
+  "pins" : [
+    {
+      "identity" : "corekit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/TimurkaevMalik/CoreKit.git",
+      "state" : {
+        "revision" : "41e2c8bca4dafd1f16689e115b5386c36766542a",
+        "version" : "2.1.0"
+      }
+    },
+    {
+      "identity" : "networkkit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/TimurkaevMalik/NetworkKit.git",
+      "state" : {
+        "branch" : "main",
+        "revision" : "76d9282280b97b5c2e8eb1da41aa963ae1c051b7"
+      }
+    }
+  ],
+  "version" : 3
+}

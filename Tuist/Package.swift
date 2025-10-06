@@ -6,7 +6,9 @@ import PackageDescription
 
     let packageSettings = PackageSettings(
         productTypes: [
-            SPMDependency.coreKit.name: .framework]
+            SPMDependency.coreKit.name: .framework,
+            SPMDependency.networkKit.name: .framework
+        ]
     )
 #endif
 
@@ -14,7 +16,8 @@ import PackageDescription
 let package = Package(
     name: "UnspMainFlow",
     dependencies: [
-        .make(from: SPMDependency.coreKit)
+        .make(from: SPMDependency.coreKit),
+        .make(from: SPMDependency.networkKit)
     ]
 )
 
@@ -24,6 +27,12 @@ fileprivate enum SPMDependency {
         name: "CoreKit",
         url: "https://github.com/TimurkaevMalik/CoreKit.git",
         requirement: .version(.init(2, 0, 0))
+    )
+    
+    static let networkKit = PackageModel(
+        name: "NetworkKit",
+        url: "https://github.com/TimurkaevMalik/NetworkKit.git",
+        requirement: .branch("main")
     )
 }
 

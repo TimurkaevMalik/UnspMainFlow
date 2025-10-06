@@ -13,6 +13,12 @@ public enum SPMDependency {
         url: "https://github.com/TimurkaevMalik/CoreKit.git",
         requirement: .version(.init(2, 0, 0))
     )
+    
+    static let networkKit = PackageModel(
+        name: "NetworkKit",
+        url: "https://github.com/TimurkaevMalik/NetworkKit.git",
+        requirement: .branch("main")
+    )
 }
 
 public struct PackageModel: Sendable {
