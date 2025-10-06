@@ -15,18 +15,19 @@ enum QueryItemNames: String {
     case perPage = "per_page"
 }
 
-enum HTTPHeaderField: String {
-    case acceptVersion = "Accept-Version"
-    case authorization = "Authorization"
-}
-
 enum HTTPHeaderValue {
     case bearer(String)
+    case apiVersion
+    case appJSON
     
     var value: String {
         switch self {
         case .bearer(let string):
             "Bearer \(string)"
+        case .apiVersion:
+            "v1"
+        case .appJSON:
+            "application/json"
         }
     }
 }

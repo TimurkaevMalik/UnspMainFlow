@@ -17,7 +17,8 @@ let package = Package(
     name: "UnspMainFlow",
     dependencies: [
         .make(from: SPMDependency.coreKit),
-        .make(from: SPMDependency.networkKit)
+        .make(from: SPMDependency.networkKit),
+        .make(from: SPMDependency.helpersSharedUnsp)
     ]
 )
 
@@ -32,6 +33,12 @@ fileprivate enum SPMDependency {
     static let networkKit = PackageModel(
         name: "NetworkKit",
         url: "https://github.com/TimurkaevMalik/NetworkKit.git",
+        requirement: .branch("main")
+    )
+    
+    static let helpersSharedUnsp = PackageModel(
+        name: "HelpersSharedUnsp",
+        url: "https://github.com/TimurkaevMalik/HelpersSharedUnsp.git",
         requirement: .branch("main")
     )
 }

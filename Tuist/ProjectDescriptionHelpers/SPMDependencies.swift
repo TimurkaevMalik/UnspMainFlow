@@ -19,6 +19,12 @@ public enum SPMDependency {
         url: "https://github.com/TimurkaevMalik/NetworkKit.git",
         requirement: .branch("main")
     )
+    
+    static let helpersSharedUnsp = PackageModel(
+        name: "HelpersSharedUnsp",
+        url: "https://github.com/TimurkaevMalik/HelpersSharedUnsp.git",
+        requirement: .branch("main")
+    )
 }
 
 public struct PackageModel: Sendable {

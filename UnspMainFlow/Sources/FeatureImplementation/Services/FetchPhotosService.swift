@@ -7,39 +7,7 @@
 
 import Foundation
 import NetworkKit
-
-enum NetworkError: Error, Sendable {
-    case invalidURL
-    case httpStatus(Int, Data? = nil)
-    case decodingFailed(underlying: Error)
-    case transport(underlying: Error)
-}
-
-@propertyWrapper
-struct DefaultEmptyString: Decodable {
-    var wrappedValue: String
-    init(from decoder: any Decoder) throws {
-        let container = try decoder.singleValueContainer()
-        wrappedValue = (try? container.decode(String.self)) ?? ""
-    }
-}
-
-struct PhotoDTO: Decodable {
-    let id: String
-    let likes: Int
-    let likedByUser: Bool
-    let urls: PhotoURLs
-    @DefaultEmptyString var description: String
-    
-    enum CodingKeys: String, CodingKey {
-        case id, likes, description, urls
-        case likedByUser = "liked_by_user"
-    }
-}
-
-struct PhotoURLs: Decodable {
-    let small: String
-}
+import HelpersSharedUnsp
 
 protocol FetchPhotosServiceProtocol {
     func fetchPhotos(
@@ -50,7 +18,6 @@ protocol FetchPhotosServiceProtocol {
 }
 
 #warning("Реализовать механизм retry")
-@MainActor
 final class FetchPhotosService: FetchPhotosServiceProtocol {
     
     private let decoder: JSONDecoder
@@ -114,20 +81,25 @@ private extension FetchPhotosService {
     func makeURLRequest(for url: URL, token: String) -> URLRequest {
         let acceptVersion = HTTPHeaderField.acceptVersion.rawValue
         let authorization = HTTPHeaderField.authorization.rawValue
+        let accept = HTTPHeaderField.accept.rawValue
+        
         let bearerValue = HTTPHeaderValue.bearer(token).value
+        let apiVersionValue = HTTPHeaderValue.apiVersion.value
+        let apiJsonValue = HTTPHeaderValue.appJSON.value
         
         var request = URLRequest(url: url)
         request.httpMethod = HTTPMethod.get.rawValue
         request.addValue(bearerValue, forHTTPHeaderField: authorization)
-        request.addValue("v1", forHTTPHeaderField: acceptVersion)
-        request.addValue("application/json", forHTTPHeaderField: "Accept")
+        request.addValue(apiVersionValue, forHTTPHeaderField: acceptVersion)
+        request.addValue(apiJsonValue, forHTTPHeaderField: accept)
+        
         return request
     }
     
     func makeURL(page: Int, size: Int) -> URL? {
         URLBuilder()
             .scheme(Scheme.https.rawValue)
-            .host("api.unsplash.com")
+            .host(Host.apiUnsplash.rawValue)
             .path(Path.build([.photos]))
             .queryItem(name: QueryItemNames.perPage.rawValue, value: "\(size)")
             .queryItem(name: QueryItemNames.page.rawValue, value: "\(page)")
