@@ -9,7 +9,7 @@ import Foundation
 import NetworkKit
 import HelpersSharedUnsp
 
-protocol FetchPhotosServiceProtocol {
+protocol PhotosDataServiceProtocol {
     func fetchPhotos(
         page: Int,
         size: Int,
@@ -18,7 +18,7 @@ protocol FetchPhotosServiceProtocol {
 }
 
 #warning("Реализовать механизм retry")
-final class FetchPhotosService: FetchPhotosServiceProtocol {
+final class PhotosDataService: PhotosDataServiceProtocol {
     
     private let decoder: JSONDecoder
     let session: URLSession
@@ -58,7 +58,7 @@ final class FetchPhotosService: FetchPhotosServiceProtocol {
     }
 }
 
-private extension FetchPhotosService {
+private extension PhotosDataService {
     func handle(response: URLResponse) throws {
         guard let httpResp = response as? HTTPURLResponse else {
             throw NetworkError.transport(underlying: URLError(.badServerResponse))
