@@ -6,8 +6,12 @@ import PackageDescription
 
     let packageSettings = PackageSettings(
         productTypes: [
+            SPMDependency.snapKit.name: .framework,
             SPMDependency.coreKit.name: .framework,
-            SPMDependency.networkKit.name: .framework
+            SPMDependency.loggingKit.name: .framework,
+            SPMDependency.networkKit.name: .framework,
+            SPMDependency.helpersSharedUnsp.name: .framework,
+            SPMDependency.keychainStorageKit.name: .framework
         ]
     )
 #endif
@@ -16,14 +20,36 @@ import PackageDescription
 let package = Package(
     name: "UnspMainFlow",
     dependencies: [
+        .make(from: SPMDependency.snapKit),
         .make(from: SPMDependency.coreKit),
+        .make(from: SPMDependency.loggingKit),
         .make(from: SPMDependency.networkKit),
-        .make(from: SPMDependency.helpersSharedUnsp)
+        .make(from: SPMDependency.helpersSharedUnsp),
+        .make(from: SPMDependency.keychainStorageKit)
     ]
 )
 
 /// MARK: - Dependencies
 fileprivate enum SPMDependency {
+    static let snapKit = PackageModel(
+        name: "SnapKit",
+        url: "https://github.com/SnapKit/SnapKit.git",
+        requirement: .version(.init(5, 7, 0))
+    )
+
+    // MARK: - My own libraries
+    static let loggingKit = PackageModel(
+        name: "LoggingKit",
+        url: "https://github.com/TimurkaevMalik/LoggingKit.git",
+        requirement: .version(.init(1, 0, 0))
+    )
+    
+    static let keychainStorageKit = PackageModel(
+        name: "KeychainStorageKit",
+        url: "https://github.com/TimurkaevMalik/KeychainStorageKit.git",
+        requirement: .version(.init(1, 1, 3))
+    )
+    
     static let coreKit = PackageModel(
         name: "CoreKit",
         url: "https://github.com/TimurkaevMalik/CoreKit.git",

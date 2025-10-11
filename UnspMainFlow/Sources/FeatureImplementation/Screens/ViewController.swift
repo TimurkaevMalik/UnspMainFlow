@@ -6,22 +6,43 @@
 //
 
 import UIKit
-
+import Combine
+#warning("Remove KeychainStorageKit")
+import KeychainStorageKit
 
 final class ViewController: UIViewController {
-//    let s = FetchPhotosService()
+    
+    private let vm = PhotosFeedViewModel(
+        photoDataRepo: PhotoDataRepository(photoDataService: PhotosDataService()),
+        keychainStorage: ValetStorage(id: "n", accessibility: .whenUnlockedThisDeviceOnly, logger: nil)!)
+    
+    private var cancellables: Set<AnyCancellable> = []
     
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemTeal
+        vm.fetchPhotosData()
         
-        Task {
-            do {
-//                let data = try await s.fetchPhotos(page: 1, token: token)
-//                print(data)
-            } catch {
-                print(error)
+        vm.photoDataServiceState
+            .receive(on: DispatchQueue.main)
+            .sink { completion in
+                switch completion {
+                case .finished:
+                    print("Finished")
+                case .failure(let error):
+                    print(error)
+                }
+            } receiveValue: { state in
+                switch state {
+                    
+                case .loading:
+                    print("Loading")
+                case .loaded(let items):
+                    print(items)
+                case .failed(let error):
+                    print("state", error)
+                }
             }
-        }
+            .store(in: &cancellables)
     }
 }

@@ -9,7 +9,7 @@ import Foundation
 import NetworkKit
 import HelpersSharedUnsp
 
-protocol PhotosDataServiceProtocol {
+protocol PhotosDataServiceProtocol: Sendable {
     func fetchPhotos(
         page: Int,
         size: Int,
@@ -71,7 +71,6 @@ private extension PhotosDataService {
     
     func handle(data: Data) throws -> [PhotoDTO] {
         do {
-            print(data)
             return try decoder.decode([PhotoDTO].self, from: data)
         } catch {
             throw NetworkError.decodingFailed(underlying: error)

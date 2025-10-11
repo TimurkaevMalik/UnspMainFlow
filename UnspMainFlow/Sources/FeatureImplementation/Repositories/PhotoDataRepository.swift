@@ -1,5 +1,5 @@
 //
-//  PhotoDataRepositories.swift
+//  PhotoDataRepository.swift
 //  UnspMainFlow
 //
 //  Created by Malik Timurkaev on 07.10.2025.
@@ -7,28 +7,26 @@
 
 import Foundation
 
+@MainActor
 protocol PhotoDataRepositoryProtocol {
-    func fetchWith(token: String) async throws -> [Photo]
+    func fetch(page: Int, size: Int, token: String) async throws -> [Photo]
 }
 
 final class PhotoDataRepository: PhotoDataRepositoryProtocol {
     
-    #warning("Можно ли напрямую обращаться к форматтерам?")
-    private let displayDateFormatter = DisplayDateFormatter()
+    #warning("Можно ли напрямую обращаться к форматтерам, а не передавать через инициализатор? Ведь мы и так можем тестировать и нам подменять не нужно.")
     private let defaultDateFormatter = DefaultDateFormatter()
     
     private let photoDataService: PhotosDataServiceProtocol
-    private var lastPage = 0
     
     init(photoDataService: PhotosDataServiceProtocol) {
         self.photoDataService = photoDataService
     }
     
-    func fetchWith(token: String) async throws -> [Photo] {
-        lastPage += 1
+    func fetch(page: Int, size: Int, token: String) async throws -> [Photo] {
         let photosDTO = try await photoDataService.fetchPhotos(
-            page: lastPage,
-            size: 10,
+            page: page,
+            size: size,
             token: token
         )
         

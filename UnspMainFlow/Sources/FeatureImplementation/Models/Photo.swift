@@ -1,24 +1,18 @@
 //
-//  PhotoDTO 2.swift
+//  Photo.swift
 //  UnspMainFlow
 //
 //  Created by Malik Timurkaev on 07.10.2025.
 //
 
+import Foundation
 
-struct PhotoDTO: Decodable {
+///Domain layer
+struct Photo {
     let id: String
+    let urls: PhotoURLs
     let likes: Int
     let likedByUser: Bool
-    let urls: PhotoURLs
-    @DefaultEmptyString var description: String
-    
-    enum CodingKeys: String, CodingKey {
-        case id, likes, description, urls
-        case likedByUser = "liked_by_user"
-    }
-}
-
-struct PhotoURLs: Decodable {
-    let small: String
+    let createdAt: Date
+    let description: String
 }
