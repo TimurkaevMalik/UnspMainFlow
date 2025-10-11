@@ -59,13 +59,13 @@ final class PhotosDataService: PhotosDataServiceProtocol {
 }
 
 private extension PhotosDataService {
-    func handle(response: URLResponse) throws {
+    func handle(response: URLResponse) throws(NetworkError) {
         guard let httpResp = response as? HTTPURLResponse else {
-            throw NetworkError.transport(underlying: URLError(.badServerResponse))
+            throw .transport(underlying: URLError(.badServerResponse))
         }
         
-        guard (200..<300).contains(httpResp.statusCode) else {
-            throw NetworkError.httpStatus(httpResp.statusCode)
+        guard (200...299).contains(httpResp.statusCode) else {
+            throw .httpStatus(httpResp.statusCode)
         }
     }
     

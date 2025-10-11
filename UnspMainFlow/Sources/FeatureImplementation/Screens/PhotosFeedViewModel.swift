@@ -5,7 +5,7 @@
 //  Created by Malik Timurkaev on 07.10.2025.
 //
 
-import Foundation
+import UIKit
 import Combine
 import KeychainStorageKit
 import HelpersSharedUnsp
@@ -13,9 +13,11 @@ import HelpersSharedUnsp
 @MainActor
 protocol PhotosFeedViewModelProtocol {
     typealias State = PhotoDataServiceState
-    var photoDataServiceState: PassthroughSubject<State, Error> { get }
+    var photoDataServiceState: PassthroughSubject<State, Never> { get }
+    var imageSubject: PassthroughSubject<ImageItem, Never> { get }
     
     func fetchPhotosData()
+    func fetchImage(by index: IndexPath)
 }
 
 enum PhotoDataServiceState {
@@ -26,11 +28,13 @@ enum PhotoDataServiceState {
 
 final class PhotosFeedViewModel: PhotosFeedViewModelProtocol {
     
-    let photoDataServiceState: PassthroughSubject<State, Error>
+    let photoDataServiceState: PassthroughSubject<State, Never>
+    let imageSubject: PassthroughSubject<ImageItem, Never>
     
-    private var photoItems: [PhotoItem] = []
+    private var photos: [Photo] = []
     
     private let photoDataRepo: PhotoDataRepositoryProtocol
+    private let imagesRepo: ImagesRepositoryProtocol
     private let keychainStorage: KeychainStorageProtocol
     private let dateFormatter = DisplayDateFormatter()
     
@@ -39,11 +43,14 @@ final class PhotosFeedViewModel: PhotosFeedViewModelProtocol {
     
     init(
         photoDataRepo: PhotoDataRepositoryProtocol,
+        imagesRepo: ImagesRepositoryProtocol,
         keychainStorage: KeychainStorageProtocol
     ) {
         self.photoDataRepo = photoDataRepo
+        self.imagesRepo = imagesRepo
         self.keychainStorage = keychainStorage
-        self.photoDataServiceState = .init()
+        photoDataServiceState = .init()
+        imageSubject = .init()
     }
     
     func fetchPhotosData() {
@@ -59,7 +66,7 @@ final class PhotosFeedViewModel: PhotosFeedViewModelProtocol {
                     token = globalToken
                 }
         
-                let photos = try await photoDataRepo.fetch(
+                photos = try await photoDataRepo.fetch(
                     page: page,
                     size: 10,
                     token: token
@@ -72,13 +79,27 @@ final class PhotosFeedViewModel: PhotosFeedViewModelProtocol {
             }
         }
     }
+    
+    func fetchImage(by index: IndexPath) {
+        guard photos.indices.contains(index.row) else { return }
+        
+        let url = photos[index.row].urls.small
+        
+        Task {
+            do {
+                let image = try await imagesRepo.fetchImage(with: url)
+                self.imageSubject.send(ImageItem(index: index, image: image))
+            } catch {
+                print(error)
+            }
+        }
+    }
 }
 
 private extension PhotosFeedViewModel {
     func convert(_ photos: [Photo]) -> [PhotoItem] {
         photos.map({
             PhotoItem(
-                id: $0.id,
                 likes: $0.likes,
                 likedByUser: $0.likedByUser,
                 createdAt: dateFormatter.string(from: $0.createdAt),

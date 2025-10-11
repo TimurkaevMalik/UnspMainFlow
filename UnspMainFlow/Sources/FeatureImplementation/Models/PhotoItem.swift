@@ -5,13 +5,17 @@
 //  Created by Malik Timurkaev on 07.10.2025.
 //
 
-import Foundation
+import UIKit
 
 ///Presentation layer
 struct PhotoItem {
-    let id: String
     let likes: Int
     let likedByUser: Bool
     let createdAt: String
     let description: String
+}
+
+struct ImageItem {
+    let index: IndexPath
+    let image: UIImage
 }
