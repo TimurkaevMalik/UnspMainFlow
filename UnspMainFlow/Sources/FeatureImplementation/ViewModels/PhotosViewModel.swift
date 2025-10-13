@@ -1,5 +1,5 @@
 //
-//  PhotosFeedViewModel.swift
+//  PhotosViewModel.swift
 //  UnspMainFlow
 //
 //  Created by Malik Timurkaev on 07.10.2025.
@@ -11,7 +11,7 @@ import KeychainStorageKit
 import HelpersSharedUnsp
 
 @MainActor
-protocol PhotosFeedViewModelProtocol {
+protocol PhotosViewModelProtocol {
     typealias State = PhotoDataServiceState
     var photoDataServiceState: PassthroughSubject<State, Never> { get }
     var imageSubject: PassthroughSubject<ImageItem, Never> { get }
@@ -26,7 +26,7 @@ enum PhotoDataServiceState {
     case failed(Error)
 }
 
-final class PhotosFeedViewModel: PhotosFeedViewModelProtocol {
+final class PhotosViewModel: PhotosViewModelProtocol {
     
     let photoDataServiceState: PassthroughSubject<State, Never>
     let imageSubject: PassthroughSubject<ImageItem, Never>
@@ -88,7 +88,7 @@ final class PhotosFeedViewModel: PhotosFeedViewModelProtocol {
         Task {
             do {
                 let image = try await imagesRepo.fetchImage(with: url)
-                self.imageSubject.send(ImageItem(index: index, image: image))
+                imageSubject.send(ImageItem(index: index, image: image))
             } catch {
                 print(error)
             }
@@ -96,7 +96,7 @@ final class PhotosFeedViewModel: PhotosFeedViewModelProtocol {
     }
 }
 
-private extension PhotosFeedViewModel {
+private extension PhotosViewModel {
     func convert(_ photos: [Photo]) -> [PhotoItem] {
         photos.map({
             PhotoItem(

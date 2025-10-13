@@ -6,8 +6,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/TimurkaevMalik/CoreKit.git",
       "state" : {
-        "revision" : "b4ba182a11ec9176155a55ed7426aa78e5a0e77b",
-        "version" : "2.3.0"
+        "revision" : "4b0546c8b0ad2599aa00be0425d01ee6967aa8de",
+        "version" : "2.3.1"
       }
     },
     {

@@ -7,6 +7,8 @@
 
 
 import UIKit
+#warning("Remove KeychainStorageKit")
+import KeychainStorageKit
 
 final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     
@@ -20,7 +22,20 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         guard let windowScene = scene as? UIWindowScene else { return }
         
         window = UIWindow(windowScene: windowScene)
-        window?.rootViewController = ViewController()
+        
+        let vm = PhotosViewModel(
+            photoDataRepo: PhotoDataRepository(photoDataService: PhotosDataService()),
+            imagesRepo: ImagesRepository(imageService: ImageService()),
+            keychainStorage: ValetStorage(id: "n", accessibility: .whenUnlockedThisDeviceOnly, logger: nil)!)
+        
+        let photoFeedCollection = ImageCollectionController(
+            vm: vm,
+            layoutFactory: TripleSectionLayoutFactory()
+        )
+        window?.rootViewController = PhotoFeedViewController(
+            vm: vm,
+            photoFeedCollectionController: photoFeedCollection
+        )
         window?.makeKeyAndVisible()
     }
 }
