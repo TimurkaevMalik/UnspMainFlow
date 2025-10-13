@@ -6,13 +6,10 @@
 //
 
 import UIKit
-import CoreKit
 
 final class ImageCollectionController: UICollectionViewController {
     
     private let vm: PhotosViewModel
-    #warning("Remove cellID")
-    private let cellID = "CELLID"
     
     init(
         vm: PhotosViewModel,
@@ -30,8 +27,8 @@ final class ImageCollectionController: UICollectionViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         collectionView.register(
-            UICollectionViewCell.self,
-            forCellWithReuseIdentifier: cellID
+            ImageCollectionCell.self,
+            forCellWithReuseIdentifier: ImageCollectionCell.identifier
         )
     }
 }
@@ -46,14 +43,14 @@ extension ImageCollectionController {
     }
     
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(
-            withReuseIdentifier: cellID,
-            for: indexPath
-        )
-        cell.layer.cornerRadius = 8
-        cell.layer.masksToBounds = true
-        cell.backgroundColor = .systemBlue
+        
+        guard let cell = collectionView.dequeueReusableCell(
+            withReuseIdentifier: ImageCollectionCell.identifier,
+            for: indexPath) as? ImageCollectionCell
+        else {
+            return UICollectionViewCell()
+        }
+        
         return cell
     }
 }
-

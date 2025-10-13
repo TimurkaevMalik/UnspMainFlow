@@ -61,11 +61,11 @@ final class PhotosViewModel: PhotosViewModelProtocol {
             do {
                 if token.isEmpty {
                     token = try self.keychainStorage.string(forKey: StorageKeys.accessToken.rawValue) ?? ""
-        
-        #warning("remove line")
+                    
+#warning("remove line")
                     token = globalToken
                 }
-        
+                
                 photos = try await photoDataRepo.fetch(
                     page: page,
                     size: 10,
