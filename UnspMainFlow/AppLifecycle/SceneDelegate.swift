@@ -35,7 +35,6 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         )
         
         let feedController = PhotoFeedViewController(
-            vm: vm,
             photoFeedCollectionController: photoFeedCollection
         )
         

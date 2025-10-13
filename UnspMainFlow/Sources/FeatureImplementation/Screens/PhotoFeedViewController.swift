@@ -11,20 +11,13 @@ import Combine
 
 final class PhotoFeedViewController: UIViewController {
     
-    private var cancellables: Set<AnyCancellable> = []
-    private let vm: PhotosViewModel
-    
     private let photoFeedCollectionController: ImageCollectionController
     
     private lazy var rootView = {
         PhotoFeedView(photosCollectionView: photoFeedCollectionController.collectionView)
     }()
     
-    init(
-        vm: PhotosViewModel,
-        photoFeedCollectionController: ImageCollectionController
-    ) {
-        self.vm = vm
+    init(photoFeedCollectionController: ImageCollectionController) {
         self.photoFeedCollectionController = photoFeedCollectionController
         super.init(nibName: nil, bundle: nil)
     }
@@ -43,37 +36,12 @@ final class PhotoFeedViewController: UIViewController {
         addChild(photoFeedCollectionController)
         photoFeedCollectionController.didMove(toParent: self)
         setUI()
-        bindVM()
-    }
-}
-
-private extension PhotoFeedViewController {
-    func bindVM() {
-        vm.photoDataServiceState
-            .receive(on: DispatchQueue.main)
-            .sink { state in
-                switch state {
-                    
-                case .loading:
-                    print("Loading")
-                case .loaded(let items):
-                    print(items)
-                case .failed(let error):
-                    print("state", error)
-                }
-            }
-            .store(in: &cancellables)
     }
 }
 
 private extension PhotoFeedViewController {
     func setUI() {
         view.backgroundColor = Palette.Asset.whitePrimary.uiColor
-        setupNavBar()
-    }
-    
-    func setupNavBar() {
-        
         title = "Photo Feed"
     }
 }
