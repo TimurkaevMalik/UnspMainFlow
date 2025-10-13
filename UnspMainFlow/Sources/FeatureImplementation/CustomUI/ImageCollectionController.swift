@@ -37,22 +37,25 @@ final class ImageCollectionController: UICollectionViewController {
 
 private extension ImageCollectionController {
     func makeDataSource() -> UICollectionViewDiffableDataSource<Section, ImageItem> {
+        let registration = makeCellRegistration()
         
-        UICollectionViewDiffableDataSource(
+        return UICollectionViewDiffableDataSource(
             collectionView: collectionView,
             cellProvider: { collection, indexPath, item in
                 
-                guard let cell = collection.dequeueReusableCell(
-                        withReuseIdentifier: ImageCollectionCell.identifier,
-                        for: indexPath) as? ImageCollectionCell
-                else {
-                    return UICollectionViewCell()
-                }
-
-                cell.set(image: item.image)
-                return cell
+                collection.dequeueConfiguredReusableCell(
+                    using: registration,
+                    for: indexPath,
+                    item: item
+                )
             }
         )
+    }
+    
+    func makeCellRegistration() -> CellRegistration {
+        CellRegistration { cell, indexPath, item in
+            cell.set(image: item.image)
+        }
     }
     
     func applySnapshot(items: [ImageItem]) {
@@ -72,7 +75,12 @@ private extension ImageCollectionController {
             forCellWithReuseIdentifier: ImageCollectionCell.identifier
         )
     }
+}
 
+private extension ImageCollectionController {
+    typealias Cell = ImageCollectionCell
+    typealias CellRegistration = UICollectionView.CellRegistration<Cell, ImageItem>
+    
     enum Section: Int {
         case main
     }
