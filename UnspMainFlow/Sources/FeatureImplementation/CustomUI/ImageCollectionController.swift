@@ -7,12 +7,14 @@
 
 import UIKit
 import CoreKit
+import Combine
 
 final class ImageCollectionController: UICollectionViewController {
     
     private let vm: PhotosViewModel
     private lazy var dataSource = makeDataSource()
     private lazy var snapShot = NSDiffableDataSourceSnapshot<Section, ImageItem>()
+    private var cancellables = Set<AnyCancellable>()
     
     init(
         vm: PhotosViewModel,
@@ -32,9 +34,63 @@ final class ImageCollectionController: UICollectionViewController {
         configureCollection()
         configureSnapshot()
         applySnapshot(items: [])
+        bindViewModel()
+        vm.fetchPhotosData()
     }
 }
 
+#warning("Не лишний ли receive(on:)?")
+private extension ImageCollectionController {
+    func bindViewModel() {
+        vm.photoDataServiceState
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] state in
+                
+                guard let self else { return }
+                
+                switch state {
+                    
+                case .loading:
+                    print("Loading")
+                case .loaded(let photosData):
+                    let startIndex = self.collectionView.visibleCells.count
+                    self.applyPlaceholderSnapshot(count: photosData.count)
+                    self.vm.fetchImages(from: .init(row: startIndex, section: 0), to: .init(row: photosData.count - 1, section: 0))
+                case .failed(let error):
+                    print(error)
+                }
+            }
+            .store(in: &cancellables)
+        
+        vm.imageSubject
+//            .debounce(for: 1, scheduler: DispatchQueue.main)
+            .receive(on: DispatchQueue.main)
+            .sink { item in
+//                if item.index.row > self.collectionView.visibleCells.count {
+//                    return
+//                }
+                let cell = self.collectionView.cellForItem(at: item.index) as? ImageCollectionCell
+                print(item)
+                print(cell)
+                cell?.set(image: item.image)
+//                self.applySnapshot(items: [item])
+            }
+            .store(in: &cancellables)
+    }
+    
+    func applySnapshot(items: [ImageItem]) {
+        snapShot.appendItems(items, toSection: .main)
+        dataSource.apply(snapShot, animatingDifferences: true)
+    }
+    
+    func applyPlaceholderSnapshot(count: Int) {
+        let items = (0..<count).map({ ImageItem(id: UUID(), index: IndexPath(row: $0, section: 0), image: UIImage()) })
+        snapShot.appendItems(items, toSection: .main)
+        dataSource.apply(snapShot, animatingDifferences: true)
+    }
+}
+
+//MARK: - Configuration
 private extension ImageCollectionController {
     func makeDataSource() -> UICollectionViewDiffableDataSource<Section, ImageItem> {
         let registration = makeCellRegistration()
@@ -56,11 +112,6 @@ private extension ImageCollectionController {
         CellRegistration { cell, indexPath, item in
             cell.set(image: item.image)
         }
-    }
-    
-    func applySnapshot(items: [ImageItem]) {
-        snapShot.appendItems(items, toSection: .main)
-        dataSource.apply(snapShot, animatingDifferences: true)
     }
     
     func configureSnapshot() {

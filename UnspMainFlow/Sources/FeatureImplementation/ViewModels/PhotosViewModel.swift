@@ -6,7 +6,7 @@
 //
 
 import UIKit
-import Combine
+@preconcurrency import Combine
 import KeychainStorageKit
 import HelpersSharedUnsp
 
@@ -17,7 +17,7 @@ protocol PhotosViewModelProtocol {
     var imageSubject: PassthroughSubject<ImageItem, Never> { get }
     
     func fetchPhotosData()
-    func fetchImage(by index: IndexPath)
+    func fetchImages(from start: IndexPath, to end: IndexPath)
 }
 
 enum PhotoDataServiceState {
@@ -29,6 +29,7 @@ enum PhotoDataServiceState {
 final class PhotosViewModel: PhotosViewModelProtocol {
     
     let photoDataServiceState: PassthroughSubject<State, Never>
+    
     let imageSubject: PassthroughSubject<ImageItem, Never>
     
     private var photos: [Photo] = []
@@ -60,18 +61,19 @@ final class PhotosViewModel: PhotosViewModelProtocol {
         Task {
             do {
                 if token.isEmpty {
-                    token = try self.keychainStorage.string(forKey: StorageKeys.accessToken.rawValue) ?? ""
+//                    token = try self.keychainStorage.string(forKey: StorageKeys.accessToken.rawValue) ?? ""
                     
 #warning("remove line")
                     token = globalToken
                 }
                 
-                photos = try await photoDataRepo.fetch(
-                    page: page,
-                    size: 10,
-                    token: token
-                )
+//                photos = try await photoDataRepo.fetch(
+//                    page: page,
+//                    size: 10,
+//                    token: token
+//                )
                 
+                photos = (0...9).map({ Photo(id: "", urls: .init(small: ""), likes: $0, likedByUser: false, createdAt: .now, description: "") })
                 let photoItems = convert(photos)
                 photoDataServiceState.send(.loaded(photoItems))
             } catch {
@@ -80,15 +82,22 @@ final class PhotosViewModel: PhotosViewModelProtocol {
         }
     }
     
-    func fetchImage(by index: IndexPath) {
-        guard photos.indices.contains(index.row) else { return }
+    func fetchImages(from start: IndexPath, to end: IndexPath) {
+        guard photos.indices.contains(start.row) else { return }
         
-        let url = photos[index.row].urls.small
-        
+//        let url = photos[start.row].urls.small
+//        let count = photos.count
         Task {
             do {
-                let image = try await imagesRepo.fetchImage(with: url)
-                imageSubject.send(ImageItem(id: UUID(), index: index, image: image))
+//                let image = try await imagesRepo.fetchImage(with: url)
+//                imageSubject.send(ImageItem(id: UUID(), index: index, image: image))
+                print(start, end)
+                let items = (start.row...end.row).map({ ImageItem(id: .init(), index: .init(row: $0, section: 0), image: UIImage(systemName: "cross")!)})
+                
+                for item in items {
+                    self.imageSubject.send(item)
+//                    try await Task.sleep(for: .seconds(0.3))
+                }
             } catch {
                 print(error)
             }
