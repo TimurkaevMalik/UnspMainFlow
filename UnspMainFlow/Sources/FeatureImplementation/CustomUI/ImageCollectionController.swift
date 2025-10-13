@@ -11,6 +11,8 @@ import CoreKit
 final class ImageCollectionController: UICollectionViewController {
     
     private let vm: PhotosViewModel
+    private lazy var dataSource = makeDataSource()
+    private lazy var snapShot = NSDiffableDataSourceSnapshot<Section, ImageItem>()
     
     init(
         vm: PhotosViewModel,
@@ -27,32 +29,51 @@ final class ImageCollectionController: UICollectionViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        configureCollection()
+        configureSnapshot()
+        applySnapshot(items: [])
+    }
+}
+
+private extension ImageCollectionController {
+    func makeDataSource() -> UICollectionViewDiffableDataSource<Section, ImageItem> {
+        
+        UICollectionViewDiffableDataSource(
+            collectionView: collectionView,
+            cellProvider: { collection, indexPath, item in
+                
+                guard let cell = collection.dequeueReusableCell(
+                        withReuseIdentifier: ImageCollectionCell.identifier,
+                        for: indexPath) as? ImageCollectionCell
+                else {
+                    return UICollectionViewCell()
+                }
+
+                cell.set(image: item.image)
+                return cell
+            }
+        )
+    }
+    
+    func applySnapshot(items: [ImageItem]) {
+        snapShot.appendItems(items, toSection: .main)
+        dataSource.apply(snapShot, animatingDifferences: true)
+    }
+    
+    func configureSnapshot() {
+        snapShot.appendSections([.main])
+    }
+    
+    func configureCollection() {
         collectionView.backgroundColor = Palette.Asset.whitePrimary.uiColor
+        collectionView.dataSource = dataSource
         collectionView.register(
             ImageCollectionCell.self,
             forCellWithReuseIdentifier: ImageCollectionCell.identifier
         )
     }
-}
 
-extension ImageCollectionController {
-    override func numberOfSections(in collectionView: UICollectionView) -> Int {
-        return 1
-    }
-    
-    override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return 8
-    }
-    
-    override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        
-        guard let cell = collectionView.dequeueReusableCell(
-            withReuseIdentifier: ImageCollectionCell.identifier,
-            for: indexPath) as? ImageCollectionCell
-        else {
-            return UICollectionViewCell()
-        }
-        
-        return cell
+    enum Section: Int {
+        case main
     }
 }

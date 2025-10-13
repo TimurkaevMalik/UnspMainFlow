@@ -88,7 +88,7 @@ final class PhotosViewModel: PhotosViewModelProtocol {
         Task {
             do {
                 let image = try await imagesRepo.fetchImage(with: url)
-                imageSubject.send(ImageItem(index: index, image: image))
+                imageSubject.send(ImageItem(id: UUID(), index: index, image: image))
             } catch {
                 print(error)
             }

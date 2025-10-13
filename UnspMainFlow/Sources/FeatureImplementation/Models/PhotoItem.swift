@@ -15,7 +15,12 @@ struct PhotoItem {
     let description: String
 }
 
-struct ImageItem {
+struct ImageItem: Hashable {
+    let id: UUID
     let index: IndexPath
     let image: UIImage
+    
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
 }
