@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import CoreKit
 import Combine
 
 final class PhotoFeedViewController: UIViewController {
@@ -39,11 +40,9 @@ final class PhotoFeedViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .systemTeal
-        
         addChild(photoFeedCollectionController)
         photoFeedCollectionController.didMove(toParent: self)
-        
+        setUI()
         bindVM()
     }
 }
@@ -64,5 +63,17 @@ private extension PhotoFeedViewController {
                 }
             }
             .store(in: &cancellables)
+    }
+}
+
+private extension PhotoFeedViewController {
+    func setUI() {
+        view.backgroundColor = Palette.Asset.whitePrimary.uiColor
+        setupNavBar()
+    }
+    
+    func setupNavBar() {
+        
+        title = "Photo Feed"
     }
 }

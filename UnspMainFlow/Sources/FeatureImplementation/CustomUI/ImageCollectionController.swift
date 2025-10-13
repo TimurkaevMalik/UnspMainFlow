@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import CoreKit
 
 final class ImageCollectionController: UICollectionViewController {
     
@@ -26,6 +27,7 @@ final class ImageCollectionController: UICollectionViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        collectionView.backgroundColor = Palette.Asset.whitePrimary.uiColor
         collectionView.register(
             ImageCollectionCell.self,
             forCellWithReuseIdentifier: ImageCollectionCell.identifier

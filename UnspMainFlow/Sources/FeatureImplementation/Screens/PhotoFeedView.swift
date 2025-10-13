@@ -7,6 +7,7 @@
 
 import UIKit
 import SnapKit
+import CoreKit
 
 final class PhotoFeedView: UIView {
     
@@ -26,10 +27,10 @@ final class PhotoFeedView: UIView {
 
 private extension PhotoFeedView {
     func setupUI() {
+        backgroundColor = Palette.Asset.whitePrimary.uiColor
         addSubview(photosCollectionView)
         photosCollectionView.showsVerticalScrollIndicator = false
         photosCollectionView.translatesAutoresizingMaskIntoConstraints = false
-        photosCollectionView.backgroundColor = .systemBrown
         
         photosCollectionView.snp.makeConstraints ({
             $0.edges.equalTo(safeAreaLayoutGuide)
