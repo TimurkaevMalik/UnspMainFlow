@@ -37,10 +37,8 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let feedController = PhotoFeedViewController(
             photoFeedCollectionController: photoFeedCollection
         )
-        
-        let s = PhotoInfoController(image: UIImage(systemName: "cross")!, info: .init(likes: 2, likedByUser: true, createdAt: "12222", description: "sdsdsadad"))
-        
-        let navigation = makeNavigationController(root: s)
+                
+        let navigation = makeNavigationController(root: feedController)
         window?.rootViewController = navigation
         window?.makeKeyAndVisible()
     }
