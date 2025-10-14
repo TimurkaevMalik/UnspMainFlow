@@ -27,12 +27,14 @@ final class PhotoInfoController: UIViewController {
         config.contentInsets = .init(top: 0, leading: 32, bottom: 0, trailing: 32)
         let uiView = UIButton(configuration: config)
         uiView.translatesAutoresizingMaskIntoConstraints = false
+        uiView.addAction(infoButtonAction, for: .touchUpInside)
         return uiView
     }()
     
     private lazy var likeButton = {
         let customView = LikeButton(isLiked: imageInfo.likedByUser)
         customView.translatesAutoresizingMaskIntoConstraints = false
+        customView.addAction(likeButtonAction, for: .touchUpInside)
         return customView
     }()
     
@@ -50,6 +52,8 @@ final class PhotoInfoController: UIViewController {
         return uiView
     }()
     
+    private var infoContainerViewTopConstraint: Constraint?
+    
     private let imageInfo: PhotoItem
     
     init(image: UIImage, info: PhotoItem) {
@@ -66,7 +70,6 @@ final class PhotoInfoController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
-        setupAction()
     }
 }
 
@@ -112,16 +115,23 @@ private extension PhotoInfoController {
         infoContainerView.backgroundColor = .green
         
         infoContainerView.snp.makeConstraints({
-            $0.top.equalTo(buttonsContainerView)
+            infoContainerViewTopConstraint = $0.top.equalTo(buttonsContainerView).constraint
             $0.horizontalEdges.equalToSuperview()
             $0.height.equalTo(50)
         })
     }
+}
+
+private extension PhotoInfoController {
+    var infoButtonAction: UIAction {
+        UIAction { [weak self] _ in
+            self?.infoContainerViewTopConstraint?.update(offset: -50)
+        }
+    }
     
-    func setupAction() {
-        let action = UIAction { [weak self] _ in
+    var likeButtonAction: UIAction {
+        UIAction { [weak self] _ in
             self?.likeButton.isLiked.toggle()
         }
-        likeButton.addAction(action, for: .touchUpInside)
     }
 }
