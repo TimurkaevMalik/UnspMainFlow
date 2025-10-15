@@ -13,13 +13,15 @@ import HelpersSharedUnsp
 @MainActor
 protocol PhotosViewModelProtocol {
     typealias State = PhotoDataServiceState
-    var photoDataServiceState: PassthroughSubject<State, Never> { get }
-    var imageSubject: PassthroughSubject<ImageItem, Never> { get }
+    
+    var photosState: PassthroughSubject<State, Never> { get }
+    var imagePublisher: PassthroughSubject<ImageItem, Never> { get }
 
     func fetchPhotosData()
-    func fetchImagesFromPhotoData(indexes: [Int])
-    func getImage(index: Int) -> UIImage?
-    func getPhotoItem(index: Int) -> PhotoItem
+    func fetchImages(for indexes: [Int])
+    
+    func imageItem(at index: Int) -> ImageItem
+    func photoItem(at index: Int) -> PhotoItem
 }
 
 enum PhotoDataServiceState {
@@ -30,18 +32,17 @@ enum PhotoDataServiceState {
 
 final class PhotosViewModel: PhotosViewModelProtocol {
     
-    let photoDataServiceState: PassthroughSubject<State, Never>
-    let imageSubject: PassthroughSubject<ImageItem, Never>
+    let photosState: PassthroughSubject<State, Never>
+    let imagePublisher: PassthroughSubject<ImageItem, Never>
     
-    private var photos: [(data: Photo, item: ImageItem)] = []
+    private var photoEntries: [(data: Photo, item: ImageItem)] = []
+    private var accessToken = ""
+    private var currentPage = 0
     
     private let photoDataRepo: PhotoDataRepositoryProtocol
     private let imagesRepo: ImagesRepositoryProtocol
     private let keychainStorage: KeychainStorageProtocol
     private let dateFormatter = DisplayDateFormatter()
-    
-    private var token = ""
-    private var page = 0
     
     init(
         photoDataRepo: PhotoDataRepositoryProtocol,
@@ -51,69 +52,53 @@ final class PhotosViewModel: PhotosViewModelProtocol {
         self.photoDataRepo = photoDataRepo
         self.imagesRepo = imagesRepo
         self.keychainStorage = keychainStorage
-        photoDataServiceState = .init()
-        imageSubject = .init()
+        photosState = .init()
+        imagePublisher = .init()
     }
     
     func fetchPhotosData() {
-        photoDataServiceState.send(.loading)
-        page += 1
+        updatePhotosState(.loading)
+        currentPage += 1
         
         Task {
             do {
-                if token.isEmpty {
-                    token = try self.keychainStorage.string(forKey: StorageKeys.accessToken.rawValue) ?? ""
+                if accessToken.isEmpty {
+                    accessToken = try self.keychainStorage.string(forKey: StorageKeys.accessToken.rawValue) ?? ""
                     
 #warning("remove line")
-                    token = globalToken
+                    accessToken = globalToken
                 }
                 
                 let newPhotos = try await photoDataRepo.fetch(
-                    page: page,
+                    page: currentPage,
                     size: 20,
-                    token: token
+                    token: accessToken
                 )
                 
-                let photoItems: [PhotoItem] = convert(newPhotos)
+                let photoItems: [PhotoItem] = makePhotoItems(newPhotos)
                 
                 let data: [(data: Photo, item: ImageItem)] = zip(newPhotos, photoItems).map({
                     ($0, ImageItem(id: $1.id, index: $1.index))
                 })
                 
-                photos.append(contentsOf: data)
-                photoDataServiceState.send(.loaded(photoItems))
+                photoEntries.append(contentsOf: data)
+                updatePhotosState(.loaded(photoItems))
             } catch {
-                photoDataServiceState.send(.failed(error))
+                updatePhotosState(.failed(error))
             }
         }
     }
     
-    func fetchImagesFromPhotoData(indexes: [Int]) {
-        indexes.forEach({ fetchImageFromPhotoData(index: $0) })
+    func fetchImages(for indexes: [Int]) {
+        indexes.forEach({ fetchImage(at: $0) })
     }
     
-    func fetchImageFromPhotoData(index: Int) {
-        guard photos.count > index else { return }
-        let url = photos[index].data.urls.small
-        
-        Task {
-            do {
-                let image = try await imagesRepo.fetchImage(with: url)
-                photos[index].item.image = image
-                imageSubject.send(photos[index].item)
-                
-            } catch {
-                print("fetchImage", error)
-            }
-        }
+    func imageItem(at index: Int) -> ImageItem {
+        photoEntries[index].item
     }
     
-    func getImage(index: Int) -> UIImage? {
-        photos[index].item.image
-    }
-    
-    func getPhotoItem(index: Int) -> PhotoItem {
-        let photoData = photos[index]
+    func photoItem(at index: Int) -> PhotoItem {
+        let photoData = photoEntries[index]
         
         return PhotoItem(id: photoData.item.id,
                          index: index,
@@ -126,16 +111,36 @@ final class PhotosViewModel: PhotosViewModelProtocol {
 }
 
 private extension PhotosViewModel {
-    func convert(_ photos: [Photo]) -> [PhotoItem] {
+    func fetchImage(at index: Int) {
+        guard photoEntries.count > index else { return }
+        let url = photoEntries[index].data.urls.small
+        
+        Task {
+            do {
+                let image = try await imagesRepo.fetchImage(with: url)
+                photoEntries[index].item.image = image
+                imagePublisher.send(photoEntries[index].item)
+                
+            } catch {
+                print("fetchImage", error)
+            }
+        }
+    }
+    
+    func makePhotoItems(_ photos: [Photo]) -> [PhotoItem] {
         photos.enumerated().map({ index, element in
             PhotoItem(
                 id: element.id,
-                index: index + self.photos.count,
+                index: index + self.photoEntries.count,
                 likes: element.likes,
                 likedByUser: element.likedByUser,
                 createdAt: dateFormatter.string(from: element.createdAt),
                 description: element.description
             )
         })
+    }
+    
+    func updatePhotosState(_ state: State) {
+        photosState.send(state)
     }
 }

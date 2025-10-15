@@ -25,4 +25,5 @@ struct PhotoDTO: Decodable {
 
 struct PhotoURLs: Decodable {
     let small: String
+    let full: String
 }

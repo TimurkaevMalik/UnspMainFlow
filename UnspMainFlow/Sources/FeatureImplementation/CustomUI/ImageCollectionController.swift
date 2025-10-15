@@ -9,10 +9,10 @@ import UIKit
 import CoreKit
 import Combine
 
+// MARK: - Lifecycle
 final class ImageCollectionController: UICollectionViewController {
     
     private let vm: PhotosViewModel
-    private var snapshot = Snapshot()
     private var cancellables = Set<AnyCancellable>()
     private lazy var dataSource = makeDataSource()
     
@@ -38,24 +38,26 @@ final class ImageCollectionController: UICollectionViewController {
     }
 }
 
+// MARK: - UICollectionViewDelegate
 extension ImageCollectionController {
 #warning("Перенести в Coordinator")
     override func collectionView(
         _ collectionView: UICollectionView,
         didSelectItemAt indexPath: IndexPath
     ) {
-        guard let image = vm.getImage(index: indexPath.row) else { return }
-        let photoItem = vm.getPhotoItem(index: indexPath.row)
+        guard let image = vm.imageItem(at: indexPath.row).image else { return }
+        let photoItem = vm.photoItem(at: indexPath.row)
         let vc = PhotoInfoController(image: image, info: photoItem)
         
         navigationController?.pushViewController(vc, animated: true)
     }
 }
 
+// MARK: - Bindings
 #warning("Не лишний ли receive(on:)?")
 private extension ImageCollectionController {
     func bindViewModel() {
-        vm.photoDataServiceState
+        vm.photosState
             .receive(on: DispatchQueue.main)
             .sink { [weak self] state in
 #warning("Нужен ли guard?")
@@ -74,7 +76,7 @@ private extension ImageCollectionController {
             }
             .store(in: &cancellables)
         
-        vm.imageSubject
+        vm.imagePublisher
             .receive(on: DispatchQueue.main)
             .sink { item in
                 self.updateSnapshot(itemID: item.id)
@@ -90,7 +92,7 @@ private extension ImageCollectionController {
         }
         
         apply(itemsIDs: tuple.ids)
-        vm.fetchImagesFromPhotoData(indexes: tuple.indexes)
+        vm.fetchImages(for: tuple.indexes)
     }
     
     func updateSnapshot(itemID: String) {
@@ -100,6 +102,7 @@ private extension ImageCollectionController {
     }
 
     func apply(itemsIDs: [String]) {
+        var snapshot = dataSource.snapshot()
         snapshot.appendItems(itemsIDs, toSection: .main)
         dataSource.apply(snapshot, animatingDifferences: true)
     }
@@ -114,7 +117,9 @@ private extension ImageCollectionController {
     }
     
     func configureSnapshot() {
+        var snapshot = Snapshot()
         snapshot.appendSections([.main])
+        dataSource.apply(snapshot)
     }
 
     func makeDataSource() -> DataSource {
@@ -125,14 +130,15 @@ private extension ImageCollectionController {
     }
     
     func makeCellRegistration() -> CellRegistration {
-        CellRegistration { cell, indexPath, item in
-            if let image = self.vm.getImage(index: indexPath.row) {
+        CellRegistration { cell, indexPath, id in
+            if let image = self.vm.imageItem(at: indexPath.row).image {
                 cell.set(image: image)
             }
         }
     }
 }
 
+// MARK: - Typealiases & Section
 private extension ImageCollectionController {
     typealias Cell = ImageCollectionCell
     typealias Snapshot = NSDiffableDataSourceSnapshot<Section, ImageItem.ID>
