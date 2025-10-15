@@ -77,9 +77,13 @@ private extension ImageCollectionController {
             .store(in: &cancellables)
         
         vm.imagePublisher
+            .collect(.byTime(DispatchQueue.main, .seconds(1)))
             .receive(on: DispatchQueue.main)
-            .sink { item in
-                self.updateSnapshot(itemID: item.id)
+            .map({ item in
+                item.map({ $0.id })
+            })
+            .sink {
+                self.updateSnapshot(itemsIDs: $0)
             }
             .store(in: &cancellables)
     }
@@ -95,9 +99,9 @@ private extension ImageCollectionController {
         vm.fetchImages(for: tuple.indexes)
     }
     
-    func updateSnapshot(itemID: String) {
+    func updateSnapshot(itemsIDs: [String]) {
         var snapshot = dataSource.snapshot()
-        snapshot.reconfigureItems([itemID])
+        snapshot.reconfigureItems(itemsIDs)
         dataSource.apply(snapshot, animatingDifferences: true)
     }
 

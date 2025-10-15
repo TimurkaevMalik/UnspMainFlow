@@ -14,6 +14,7 @@ final class ImageCollectionCell: UICollectionViewCell {
     
     private lazy var imageView = {
         let uiView = UIImageView()
+        uiView.contentMode = .scaleAspectFill
         uiView.translatesAutoresizingMaskIntoConstraints = false
         return uiView
     }()

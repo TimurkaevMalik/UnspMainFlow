@@ -163,6 +163,7 @@ private extension PhotoInfoController {
     
     func setupUI() {
         let buttonHeight = 42
+        let buttonsContainerViewHeight = buttonHeight + 24
         let buttonsHorizontalInset = 64
         let safeArea = view.safeAreaLayoutGuide
         
@@ -173,7 +174,7 @@ private extension PhotoInfoController {
         buttonsContainerView.snp.makeConstraints({
             $0.horizontalEdges.equalToSuperview()
             $0.bottom.equalToSuperview()
-            $0.height.equalTo(buttonHeight + 24)
+            $0.height.equalTo(buttonsContainerViewHeight)
         })
         
         infoButton.snp.makeConstraints({
@@ -191,7 +192,7 @@ private extension PhotoInfoController {
         imageView.snp.makeConstraints({
             $0.horizontalEdges.equalToSuperview()
             $0.top.equalTo(safeArea)
-            $0.bottom.equalTo(safeArea).inset(buttonsContainerView.frame.height)
+            $0.bottom.equalToSuperview().inset(buttonsContainerViewHeight)
         })
         
         likesCountLabel.snp.makeConstraints({
