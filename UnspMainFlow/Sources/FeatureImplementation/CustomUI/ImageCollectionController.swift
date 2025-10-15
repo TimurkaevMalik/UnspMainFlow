@@ -31,9 +31,24 @@ final class ImageCollectionController: UICollectionViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        configureSnapshot()
         configureCollection()
         bindViewModel()
         vm.fetchPhotosData()
+    }
+}
+
+extension ImageCollectionController {
+#warning("Перенести в Coordinator")
+    override func collectionView(
+        _ collectionView: UICollectionView,
+        didSelectItemAt indexPath: IndexPath
+    ) {
+        guard let image = vm.getImage(index: indexPath.row) else { return }
+        let photoItem = vm.getPhotoItem(index: indexPath.row)
+        let vc = PhotoInfoController(image: image, info: photoItem)
+        
+        navigationController?.pushViewController(vc, animated: true)
     }
 }
 
@@ -43,11 +58,10 @@ private extension ImageCollectionController {
         vm.photoDataServiceState
             .receive(on: DispatchQueue.main)
             .sink { [weak self] state in
-                
+#warning("Нужен ли guard?")
                 guard let self else { return }
                 
                 switch state {
-                    
                 case .loading:
                     print("Loading")
                     
@@ -62,37 +76,32 @@ private extension ImageCollectionController {
         
         vm.imageSubject
             .receive(on: DispatchQueue.main)
-            .sink { items in
-                self.updateSnapshot(items: items)
+            .sink { item in
+                self.updateSnapshot(item: item.id)
             }
             .store(in: &cancellables)
     }
     
     func handleLoaded(data: [PhotoItem]) {
-        let items = data.map({
-            let id = UUID()
+        let tuple = data.reduce(into: (ids: [UUID](), indexes: [Int]())) { partialResult, item in
             
-            self.vm.fetchImageFromPhotoData(forID: id, index: $0.index)
-            return ImageItem(id: id, index: $0.index)
-        })
+            partialResult.ids.append(item.id)
+            partialResult.indexes.append(item.index)
+        }
         
-        self.apply(items: items)
+        apply(items: tuple.ids)
+        vm.fetchImagesFromPhotoData(indexes: tuple.indexes)
     }
     
-    func updateSnapshot(items: [ImageItem]) {
-//        var newSnapshot = Snapshot()
-//        newSnapshot.appendSections([.main])
-//        newSnapshot.appendItems(items, toSection: .main)
-//        
-//        snapshot.reconfigureItems(items)
-//        dataSource.apply(snapshot, animatingDifferences: true)
+    func updateSnapshot(item: UUID) {
+        var snapshot = dataSource.snapshot()
+        snapshot.reconfigureItems([item])
+        dataSource.apply(snapshot, animatingDifferences: true)
     }
 
-    func apply(items: [ImageItem]) {
-//        print("applied items")
-//        snapshot.appendSections([.main])
-//        snapshot.appendItems(items, toSection: .main)
-//        dataSource.apply(snapshot, animatingDifferences: true)
+    func apply(items: [UUID]) {
+        snapshot.appendItems(items, toSection: .main)
+        dataSource.apply(snapshot, animatingDifferences: true)
     }
 }
 
@@ -102,6 +111,10 @@ private extension ImageCollectionController {
         collectionView.backgroundColor = Palette.Asset.whitePrimary.uiColor
         collectionView.dataSource = dataSource
         collectionView.register(Cell.self, identifier: Cell.identifier)
+    }
+    
+    func configureSnapshot() {
+        snapshot.appendSections([.main])
     }
 
     func makeDataSource() -> DataSource {
@@ -113,8 +126,7 @@ private extension ImageCollectionController {
     
     func makeCellRegistration() -> CellRegistration {
         CellRegistration { cell, indexPath, item in
-            if let image = item.image {
-                print("did set")
+            if let image = self.vm.getImage(index: indexPath.row) {
                 cell.set(image: image)
             }
         }
@@ -123,9 +135,9 @@ private extension ImageCollectionController {
 
 private extension ImageCollectionController {
     typealias Cell = ImageCollectionCell
-    typealias Snapshot = NSDiffableDataSourceSnapshot<Section, ImageItem>
-    typealias CellRegistration = UICollectionView.CellRegistration<Cell, ImageItem>
-    typealias DataSource = UICollectionViewDiffableDataSource<Section, ImageItem>
+    typealias Snapshot = NSDiffableDataSourceSnapshot<Section, ImageItem.ID>
+    typealias CellRegistration = UICollectionView.CellRegistration<Cell, ImageItem.ID>
+    typealias DataSource = UICollectionViewDiffableDataSource<Section, ImageItem.ID>
     
     enum Section: Int {
         case main

@@ -9,6 +9,7 @@ import UIKit
 
 ///Presentation layer
 struct PhotoItem {
+    let id: UUID
     let index: Int
     let likes: Int
     let likedByUser: Bool

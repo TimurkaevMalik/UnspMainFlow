@@ -8,7 +8,7 @@
 import Foundation
 import UIKit
 
-struct ImageItem: Hashable {
+struct ImageItem: Hashable, Identifiable {
     var id: UUID
     let index: Int
     var image: UIImage?
