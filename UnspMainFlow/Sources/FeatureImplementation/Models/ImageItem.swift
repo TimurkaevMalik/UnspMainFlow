@@ -9,11 +9,15 @@ import Foundation
 import UIKit
 
 struct ImageItem: Hashable, Identifiable {
-    var id: UUID
+    var id: String
     let index: Int
     var image: UIImage?
     
-    init(id: UUID, index: Int, image: UIImage? = nil) {
+    init(
+        id: String,
+        index: Int,
+        image: UIImage? = nil
+    ) {
         self.id = id
         self.index = index
         self.image = image

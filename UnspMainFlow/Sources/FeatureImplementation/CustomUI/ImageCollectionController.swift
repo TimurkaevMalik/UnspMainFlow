@@ -77,30 +77,30 @@ private extension ImageCollectionController {
         vm.imageSubject
             .receive(on: DispatchQueue.main)
             .sink { item in
-                self.updateSnapshot(item: item.id)
+                self.updateSnapshot(itemID: item.id)
             }
             .store(in: &cancellables)
     }
     
     func handleLoaded(data: [PhotoItem]) {
-        let tuple = data.reduce(into: (ids: [UUID](), indexes: [Int]())) { partialResult, item in
+        let tuple = data.reduce(into: (ids: [String](), indexes: [Int]())) { partialResult, item in
             
             partialResult.ids.append(item.id)
             partialResult.indexes.append(item.index)
         }
         
-        apply(items: tuple.ids)
+        apply(itemsIDs: tuple.ids)
         vm.fetchImagesFromPhotoData(indexes: tuple.indexes)
     }
     
-    func updateSnapshot(item: UUID) {
+    func updateSnapshot(itemID: String) {
         var snapshot = dataSource.snapshot()
-        snapshot.reconfigureItems([item])
+        snapshot.reconfigureItems([itemID])
         dataSource.apply(snapshot, animatingDifferences: true)
     }
 
-    func apply(items: [UUID]) {
-        snapshot.appendItems(items, toSection: .main)
+    func apply(itemsIDs: [String]) {
+        snapshot.appendItems(itemsIDs, toSection: .main)
         dataSource.apply(snapshot, animatingDifferences: true)
     }
 }

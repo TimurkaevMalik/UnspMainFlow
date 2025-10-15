@@ -73,23 +73,15 @@ final class PhotosViewModel: PhotosViewModelProtocol {
                     size: 20,
                     token: token
                 )
-
-                var items: [PhotoItem] = []
                 
-                let photoItems = newPhotos.enumerated().map({ i, element in
-                    
-                    let id = UUID()
-                    let index = i + photos.count
-                    
-                    let item = PhotoItem(id: id, index: index, likes: element.likes, likedByUser: element.likedByUser, createdAt: dateFormatter.string(from: element.createdAt), description: element.description)
-                    
-                    items.append(item)
-                    
-                    return (element, ImageItem(id: id, index: index))
+                let photoItems: [PhotoItem] = convert(newPhotos)
+                
+                let data: [(data: Photo, item: ImageItem)] = zip(newPhotos, photoItems).map({
+                    ($0, ImageItem(id: $1.id, index: $1.index))
                 })
                 
-                photos.append(contentsOf: photoItems)
-                photoDataServiceState.send(.loaded(items))
+                photos.append(contentsOf: data)
+                photoDataServiceState.send(.loaded(photoItems))
             } catch {
                 photoDataServiceState.send(.failed(error))
             }
@@ -137,7 +129,7 @@ private extension PhotosViewModel {
     func convert(_ photos: [Photo]) -> [PhotoItem] {
         photos.enumerated().map({ index, element in
             PhotoItem(
-                id: UUID(),
+                id: element.id,
                 index: index + self.photos.count,
                 likes: element.likes,
                 likedByUser: element.likedByUser,
