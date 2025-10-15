@@ -6,7 +6,7 @@
 //
 
 import UIKit
-@preconcurrency import Combine
+import Combine
 import KeychainStorageKit
 import HelpersSharedUnsp
 
@@ -14,10 +14,10 @@ import HelpersSharedUnsp
 protocol PhotosViewModelProtocol {
     typealias State = PhotoDataServiceState
     var photoDataServiceState: PassthroughSubject<State, Never> { get }
-    var imageSubject: PassthroughSubject<ImageItem, Never> { get }
-    
+    var imageSubject: PassthroughSubject<[ImageItem], Never> { get }
+
     func fetchPhotosData()
-    func fetchImages(from start: IndexPath, to end: IndexPath)
+    func fetchImageFromPhotoData(forID id: UUID, index: Int)
 }
 
 enum PhotoDataServiceState {
@@ -30,8 +30,7 @@ final class PhotosViewModel: PhotosViewModelProtocol {
     
     let photoDataServiceState: PassthroughSubject<State, Never>
     
-    let imageSubject: PassthroughSubject<ImageItem, Never>
-    
+    let imageSubject: PassthroughSubject<[ImageItem], Never>
     private var photos: [Photo] = []
     
     private let photoDataRepo: PhotoDataRepositoryProtocol
@@ -61,20 +60,20 @@ final class PhotosViewModel: PhotosViewModelProtocol {
         Task {
             do {
                 if token.isEmpty {
-//                    token = try self.keychainStorage.string(forKey: StorageKeys.accessToken.rawValue) ?? ""
+                    token = try self.keychainStorage.string(forKey: StorageKeys.accessToken.rawValue) ?? ""
                     
 #warning("remove line")
                     token = globalToken
                 }
                 
-//                photos = try await photoDataRepo.fetch(
-//                    page: page,
-//                    size: 10,
-//                    token: token
-//                )
+                let newPhotos = try await photoDataRepo.fetch(
+                    page: page,
+                    size: 20,
+                    token: token
+                )
+                let photoItems = convert(newPhotos)
                 
-                photos = (0...9).map({ Photo(id: "", urls: .init(small: ""), likes: $0, likedByUser: false, createdAt: .now, description: "") })
-                let photoItems = convert(photos)
+                photos.append(contentsOf: newPhotos)
                 photoDataServiceState.send(.loaded(photoItems))
             } catch {
                 photoDataServiceState.send(.failed(error))
@@ -82,24 +81,22 @@ final class PhotosViewModel: PhotosViewModelProtocol {
         }
     }
     
-    func fetchImages(from start: IndexPath, to end: IndexPath) {
-        guard photos.indices.contains(start.row) else { return }
+    func fetchImageFromPhotoData(forID id: UUID, index: Int) {
+        guard photos.count > index else { return }
+        let url = photos[index].urls.small
         
-//        let url = photos[start.row].urls.small
-//        let count = photos.count
         Task {
             do {
-//                let image = try await imagesRepo.fetchImage(with: url)
-//                imageSubject.send(ImageItem(id: UUID(), index: index, image: image))
-                print(start, end)
-                let items = (start.row...end.row).map({ ImageItem(id: .init(), index: .init(row: $0, section: 0), image: UIImage(systemName: "cross")!)})
+                let image = try await imagesRepo.fetchImage(with: url)
                 
-                for item in items {
-                    self.imageSubject.send(item)
-//                    try await Task.sleep(for: .seconds(0.3))
-                }
+                imageSubject.send([ImageItem(
+                    id: id,
+                    index: index,
+                    image: image
+                )])
+                
             } catch {
-                print(error)
+                print("fetchImage", error)
             }
         }
     }
@@ -107,12 +104,13 @@ final class PhotosViewModel: PhotosViewModelProtocol {
 
 private extension PhotosViewModel {
     func convert(_ photos: [Photo]) -> [PhotoItem] {
-        photos.map({
+        photos.enumerated().map({ index, element in
             PhotoItem(
-                likes: $0.likes,
-                likedByUser: $0.likedByUser,
-                createdAt: dateFormatter.string(from: $0.createdAt),
-                description: $0.description
+                index: index + self.photos.count,
+                likes: element.likes,
+                likedByUser: element.likedByUser,
+                createdAt: dateFormatter.string(from: element.createdAt),
+                description: element.description
             )
         })
     }

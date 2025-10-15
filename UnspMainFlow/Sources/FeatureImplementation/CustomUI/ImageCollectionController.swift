@@ -12,9 +12,9 @@ import Combine
 final class ImageCollectionController: UICollectionViewController {
     
     private let vm: PhotosViewModel
-    private lazy var dataSource = makeDataSource()
-    private lazy var snapShot = NSDiffableDataSourceSnapshot<Section, ImageItem>()
+    private var snapshot = Snapshot()
     private var cancellables = Set<AnyCancellable>()
+    private lazy var dataSource = makeDataSource()
     
     init(
         vm: PhotosViewModel,
@@ -32,8 +32,6 @@ final class ImageCollectionController: UICollectionViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         configureCollection()
-        configureSnapshot()
-        applySnapshot(items: [])
         bindViewModel()
         vm.fetchPhotosData()
     }
@@ -52,10 +50,10 @@ private extension ImageCollectionController {
                     
                 case .loading:
                     print("Loading")
+                    
                 case .loaded(let photosData):
-                    let startIndex = self.collectionView.visibleCells.count
-                    self.applyPlaceholderSnapshot(count: photosData.count)
-                    self.vm.fetchImages(from: .init(row: startIndex, section: 0), to: .init(row: photosData.count - 1, section: 0))
+                    handleLoaded(data: photosData)
+    
                 case .failed(let error):
                     print(error)
                 }
@@ -63,36 +61,44 @@ private extension ImageCollectionController {
             .store(in: &cancellables)
         
         vm.imageSubject
-//            .debounce(for: 1, scheduler: DispatchQueue.main)
             .receive(on: DispatchQueue.main)
-            .sink { item in
-//                if item.index.row > self.collectionView.visibleCells.count {
-//                    return
-//                }
-                let cell = self.collectionView.cellForItem(at: item.index) as? ImageCollectionCell
-                print(item)
-                print(cell)
-                cell?.set(image: item.image)
-//                self.applySnapshot(items: [item])
+            .sink { items in
+                self.updateSnapshot(items: items)
             }
             .store(in: &cancellables)
     }
     
-    func applySnapshot(items: [ImageItem]) {
-        snapShot.appendItems(items, toSection: .main)
-        dataSource.apply(snapShot, animatingDifferences: true)
+    func handleLoaded(data: [PhotoItem]) {
+        let items = data.map({
+            let id = UUID()
+            
+            self.vm.fetchImageFromPhotoData(forID: id, index: $0.index)
+            return ImageItem(id: id, index: $0.index)
+        })
+        
+        self.apply(items: items)
     }
     
-    func applyPlaceholderSnapshot(count: Int) {
-        let items = (0..<count).map({ ImageItem(id: UUID(), index: IndexPath(row: $0, section: 0), image: UIImage()) })
-        snapShot.appendItems(items, toSection: .main)
-        dataSource.apply(snapShot, animatingDifferences: true)
+    func updateSnapshot(items: [ImageItem]) {
+//        var newSnapshot = Snapshot()
+//        newSnapshot.appendSections([.main])
+//        newSnapshot.appendItems(items, toSection: .main)
+//        
+//        snapshot.reconfigureItems(items)
+//        dataSource.apply(snapshot, animatingDifferences: true)
+    }
+
+    func apply(items: [ImageItem]) {
+//        print("applied items")
+//        snapshot.appendSections([.main])
+//        snapshot.appendItems(items, toSection: .main)
+//        dataSource.apply(snapshot, animatingDifferences: true)
     }
 }
 
 //MARK: - Configuration
 private extension ImageCollectionController {
-    func makeDataSource() -> UICollectionViewDiffableDataSource<Section, ImageItem> {
+    func makeDataSource() -> DataSource {
         let registration = makeCellRegistration()
         
         return UICollectionViewDiffableDataSource(
@@ -110,19 +116,18 @@ private extension ImageCollectionController {
     
     func makeCellRegistration() -> CellRegistration {
         CellRegistration { cell, indexPath, item in
-            cell.set(image: item.image)
+            if let image = item.image {
+                print("did set")
+                cell.set(image: image)
+            }
         }
     }
-    
-    func configureSnapshot() {
-        snapShot.appendSections([.main])
-    }
-    
+        
     func configureCollection() {
         collectionView.backgroundColor = Palette.Asset.whitePrimary.uiColor
         collectionView.dataSource = dataSource
         collectionView.register(
-            ImageCollectionCell.self,
+            Cell.self,
             forCellWithReuseIdentifier: ImageCollectionCell.identifier
         )
     }
@@ -130,7 +135,9 @@ private extension ImageCollectionController {
 
 private extension ImageCollectionController {
     typealias Cell = ImageCollectionCell
+    typealias Snapshot = NSDiffableDataSourceSnapshot<Section, ImageItem>
     typealias CellRegistration = UICollectionView.CellRegistration<Cell, ImageItem>
+    typealias DataSource = UICollectionViewDiffableDataSource<Section, ImageItem>
     
     enum Section: Int {
         case main
