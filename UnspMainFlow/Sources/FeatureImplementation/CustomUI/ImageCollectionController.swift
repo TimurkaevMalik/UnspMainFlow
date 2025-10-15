@@ -98,19 +98,16 @@ private extension ImageCollectionController {
 
 //MARK: - Configuration
 private extension ImageCollectionController {
+    func configureCollection() {
+        collectionView.backgroundColor = Palette.Asset.whitePrimary.uiColor
+        collectionView.dataSource = dataSource
+        collectionView.register(Cell.self, identifier: Cell.identifier)
+    }
+
     func makeDataSource() -> DataSource {
-        let registration = makeCellRegistration()
-        
-        return UICollectionViewDiffableDataSource(
+        UICollectionViewDiffableDataSource(
             collectionView: collectionView,
-            cellProvider: { collection, indexPath, item in
-                
-                collection.dequeueConfiguredReusableCell(
-                    using: registration,
-                    for: indexPath,
-                    item: item
-                )
-            }
+            cellProvider: makeCellRegistration().cellProvider
         )
     }
     
@@ -121,15 +118,6 @@ private extension ImageCollectionController {
                 cell.set(image: image)
             }
         }
-    }
-        
-    func configureCollection() {
-        collectionView.backgroundColor = Palette.Asset.whitePrimary.uiColor
-        collectionView.dataSource = dataSource
-        collectionView.register(
-            Cell.self,
-            forCellWithReuseIdentifier: ImageCollectionCell.identifier
-        )
     }
 }
 
