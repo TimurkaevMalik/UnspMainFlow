@@ -16,7 +16,7 @@ protocol PhotosViewModelProtocol {
     
     var photosState: PassthroughSubject<State, Never> { get }
     var imagePublisher: PassthroughSubject<ImageItem, Never> { get }
-
+    
     func fetchPhotosData()
     func fetchImages(for indexes: [Int])
     
@@ -36,8 +36,9 @@ final class PhotosViewModel: PhotosViewModelProtocol {
     let imagePublisher: PassthroughSubject<ImageItem, Never>
     
     private var photoEntries: [(data: Photo, item: ImageItem)] = []
+    private var activeTasks: [Int: Task<(), Never>] = [:]
+    private var currentPhotosPage = 0
     private var accessToken = ""
-    private var currentPage = 0
     
     private let photoDataRepo: PhotoDataRepositoryProtocol
     private let imagesRepo: ImagesRepositoryProtocol
@@ -58,7 +59,7 @@ final class PhotosViewModel: PhotosViewModelProtocol {
     
     func fetchPhotosData() {
         updatePhotosState(.loading)
-        currentPage += 1
+        currentPhotosPage += 1
         
         Task {
             do {
@@ -69,11 +70,14 @@ final class PhotosViewModel: PhotosViewModelProtocol {
                     accessToken = globalToken
                 }
                 
-                let newPhotos = try await photoDataRepo.fetch(
-                    page: currentPage,
+                var newPhotos = try await photoDataRepo.fetch(
+                    page: currentPhotosPage,
                     size: 20,
                     token: accessToken
                 )
+                ///На стороне Unsplash баг с дупликатами
+                ///Использую костыль ниже
+                newPhotos.removeLast(3)
                 
                 let photoItems: [PhotoItem] = makePhotoItems(newPhotos)
                 
@@ -112,19 +116,25 @@ final class PhotosViewModel: PhotosViewModelProtocol {
 
 private extension PhotosViewModel {
     func fetchImage(at index: Int) {
-        guard photoEntries.count > index else { return }
+        guard activeTasks[index] == nil,
+              photoEntries[index].item.image == nil,
+              photoEntries.count > index
+        else { return }
+        
         let url = photoEntries[index].data.urls.small
         
-        Task {
+        let task = Task {
             do {
                 let image = try await imagesRepo.fetchImage(with: url)
                 photoEntries[index].item.image = image
                 imagePublisher.send(photoEntries[index].item)
-                
+                activeTasks.removeValue(forKey: index)
             } catch {
-                print("fetchImage", error)
+                print(error)
             }
         }
+        
+        activeTasks.updateValue(task, forKey: index)
     }
     
     func makePhotoItems(_ photos: [Photo]) -> [PhotoItem] {

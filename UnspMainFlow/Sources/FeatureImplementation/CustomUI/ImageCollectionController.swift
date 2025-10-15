@@ -35,21 +35,9 @@ final class ImageCollectionController: UICollectionViewController {
         configureCollection()
         bindViewModel()
         vm.fetchPhotosData()
-    }
-}
-
-// MARK: - UICollectionViewDelegate
-extension ImageCollectionController {
-#warning("Перенести в Coordinator")
-    override func collectionView(
-        _ collectionView: UICollectionView,
-        didSelectItemAt indexPath: IndexPath
-    ) {
-        guard let image = vm.imageItem(at: indexPath.row).image else { return }
-        let photoItem = vm.photoItem(at: indexPath.row)
-        let vc = PhotoInfoController(image: image, info: photoItem)
-        
-        navigationController?.pushViewController(vc, animated: true)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
+            self.vm.fetchPhotosData()
+        }
     }
 }
 
@@ -68,7 +56,7 @@ private extension ImageCollectionController {
                     print("Loading")
                     
                 case .loaded(let photosData):
-                    handleLoaded(data: photosData)
+                    apply(itemsIDs: photosData.map({ $0.id }))
     
                 case .failed(let error):
                     print(error)
@@ -82,34 +70,45 @@ private extension ImageCollectionController {
             .map({ item in
                 item.map({ $0.id })
             })
-            .sink {
-                self.updateSnapshot(itemsIDs: $0)
+            .sink { IDs in
+                self.updateSnapshot(itemsIDs: IDs)
             }
             .store(in: &cancellables)
     }
     
-    func handleLoaded(data: [PhotoItem]) {
-        let tuple = data.reduce(into: (ids: [String](), indexes: [Int]())) { partialResult, item in
-            
-            partialResult.ids.append(item.id)
-            partialResult.indexes.append(item.index)
-        }
-        
-        apply(itemsIDs: tuple.ids)
-        vm.fetchImages(for: tuple.indexes)
-    }
-    
     func updateSnapshot(itemsIDs: [String]) {
+        print(itemsIDs)
         var snapshot = dataSource.snapshot()
         snapshot.reconfigureItems(itemsIDs)
         dataSource.apply(snapshot, animatingDifferences: true)
     }
 
     func apply(itemsIDs: [String]) {
+        print(itemsIDs)
         var snapshot = dataSource.snapshot()
         snapshot.appendItems(itemsIDs, toSection: .main)
         dataSource.apply(snapshot, animatingDifferences: true)
     }
+}
+
+// MARK: - UICollectionViewDelegate
+extension ImageCollectionController {
+#warning("Перенести в Coordinator")
+    override func collectionView(
+        _ collectionView: UICollectionView,
+        didSelectItemAt indexPath: IndexPath
+    ) {
+        guard let image = vm.imageItem(at: indexPath.item).image else { return }
+        let photoItem = vm.photoItem(at: indexPath.item)
+        let vc = PhotoInfoController(image: image, info: photoItem)
+        
+        navigationController?.pushViewController(vc, animated: true)
+    }
+}
+
+// MARK: - UICollectionViewDataSourcePrefetching
+extension ImageCollectionController: UICollectionViewDataSourcePrefetching {
+    func collectionView(_ collectionView: UICollectionView, prefetchItemsAt indexPaths: [IndexPath]) {}
 }
 
 //MARK: - Configuration
@@ -117,6 +116,7 @@ private extension ImageCollectionController {
     func configureCollection() {
         collectionView.backgroundColor = Palette.Asset.whitePrimary.uiColor
         collectionView.dataSource = dataSource
+        collectionView.prefetchDataSource = self
         collectionView.register(Cell.self, identifier: Cell.identifier)
     }
     
@@ -135,8 +135,11 @@ private extension ImageCollectionController {
     
     func makeCellRegistration() -> CellRegistration {
         CellRegistration { cell, indexPath, id in
-            if let image = self.vm.imageItem(at: indexPath.row).image {
+            print("register", indexPath.item)
+            if let image = self.vm.imageItem(at: indexPath.item).image {
                 cell.set(image: image)
+            } else {
+                self.vm.fetchImages(for: [indexPath.item])
             }
         }
     }

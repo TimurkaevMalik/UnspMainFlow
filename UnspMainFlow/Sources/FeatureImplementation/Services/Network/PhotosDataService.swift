@@ -33,7 +33,7 @@ final class PhotosDataService: PhotosDataServiceProtocol {
     
     func fetchPhotos(
         page: Int,
-        size: Int = 10,
+        size: Int,
         token: String
     ) async throws(NetworkError) -> [PhotoDTO] {
         
@@ -100,8 +100,8 @@ private extension PhotosDataService {
             .scheme(Scheme.https.rawValue)
             .host(Host.apiUnsplash.rawValue)
             .path(Path.build([.photos]))
-            .queryItem(name: QueryItemNames.perPage.rawValue, value: "\(size)")
             .queryItem(name: QueryItemNames.page.rawValue, value: "\(page)")
+            .queryItem(name: QueryItemNames.perPage.rawValue, value: "\(size)")
             .build()
     }
 }
