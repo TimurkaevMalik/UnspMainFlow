@@ -15,6 +15,8 @@ final class ImageCollectionController: UICollectionViewController {
     private let vm: PhotosViewModel
     private var cancellables = Set<AnyCancellable>()
     private lazy var dataSource = makeDataSource()
+    private var nextPageTriggerIndex = IndexPath(item: 0, section: 0)
+    private let paginationOffset = 5
     
     init(
         vm: PhotosViewModel,
@@ -53,8 +55,7 @@ private extension ImageCollectionController {
                     print("Loading")
                     
                 case .loaded(let photosData):
-                    apply(itemsIDs: photosData.map({ $0.id }))
-    
+                    handleLoaded(photosData: photosData)
                 case .failed(let error):
                     print(error)
                 }
@@ -73,6 +74,15 @@ private extension ImageCollectionController {
             .store(in: &cancellables)
     }
     
+    func handleLoaded(photosData: [PhotoItem]) {
+        apply(itemsIDs: photosData.map({ $0.id }))
+        
+        nextPageTriggerIndex = IndexPath(
+            item: nextPageTriggerIndex.item + photosData.count - paginationOffset,
+            section: 0
+        )
+    }
+    
     func updateSnapshot(itemsIDs: [String]) {
         var snapshot = dataSource.snapshot()
         snapshot.reconfigureItems(itemsIDs)
@@ -83,6 +93,11 @@ private extension ImageCollectionController {
         var snapshot = dataSource.snapshot()
         snapshot.appendItems(itemsIDs, toSection: .main)
         dataSource.apply(snapshot, animatingDifferences: true)
+    }
+    
+    func loadNextPageIfNeeded(at index: IndexPath) {
+        guard index >= nextPageTriggerIndex else { return }
+        vm.fetchPhotosData()
     }
 }
 
@@ -101,11 +116,20 @@ extension ImageCollectionController {
     }
 }
 
+// MARK: - UICollectionViewDelegate
+extension ImageCollectionController: UICollectionViewDataSourcePrefetching {
+    func collectionView(_ collectionView: UICollectionView, prefetchItemsAt indexPaths: [IndexPath]) {
+        guard let indexPath = indexPaths.last else { return }
+        loadNextPageIfNeeded(at: indexPath)
+    }
+}
+
 //MARK: - Configuration
 private extension ImageCollectionController {
     func configureCollection() {
         collectionView.backgroundColor = Palette.Asset.whitePrimary.uiColor
         collectionView.dataSource = dataSource
+        collectionView.prefetchDataSource = self
         collectionView.register(Cell.self, identifier: Cell.identifier)
     }
     

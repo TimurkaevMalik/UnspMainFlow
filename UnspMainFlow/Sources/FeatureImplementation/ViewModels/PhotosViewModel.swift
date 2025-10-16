@@ -36,7 +36,8 @@ final class PhotosViewModel: PhotosViewModelProtocol {
     let imagePublisher: PassthroughSubject<ImageItem, Never>
     
     private var photoEntries: [(data: Photo, item: ImageItem)] = []
-    private var activeTasks: [Int: Task<(), Never>] = [:]
+    private var imageItemTasks: [Int: Task<(), Never>] = [:]
+    private var photosPageTasks: [Int: Task<(), Never>] = [:]
     private var currentPhotosPage = 0
     private var accessToken = ""
     
@@ -58,10 +59,13 @@ final class PhotosViewModel: PhotosViewModelProtocol {
     }
     
     func fetchPhotosData() {
+        guard photosPageTasks[currentPhotosPage + 1] == nil else { return }
+        
         updatePhotosState(.loading)
+        currentPhotosPage += 1
+        let pageKey = currentPhotosPage
         
-        
-        Task {
+        let task = Task {
             do {
                 if accessToken.isEmpty {
                     accessToken = try self.keychainStorage.string(forKey: StorageKeys.accessToken.rawValue) ?? ""
@@ -69,7 +73,7 @@ final class PhotosViewModel: PhotosViewModelProtocol {
 #warning("remove line")
                     accessToken = globalToken
                 }
-                currentPhotosPage += 1
+        
                 var newPhotos = try await photoDataRepo.fetch(
                     page: currentPhotosPage,
                     size: 20,
@@ -91,7 +95,11 @@ final class PhotosViewModel: PhotosViewModelProtocol {
             } catch {
                 updatePhotosState(.failed(error))
             }
+            
+            photosPageTasks.removeValue(forKey: pageKey)
         }
+        
+        photosPageTasks[pageKey] = task
     }
     
     func fetchImages(for indexes: [Int]) {
@@ -117,7 +125,7 @@ final class PhotosViewModel: PhotosViewModelProtocol {
 
 private extension PhotosViewModel {
     func fetchImage(at index: Int) {
-        guard activeTasks[index] == nil,
+        guard imageItemTasks[index] == nil,
               photoEntries[index].item.image == nil,
               photoEntries.count > index
         else { return }
@@ -129,13 +137,14 @@ private extension PhotosViewModel {
                 let image = try await imagesRepo.fetchImage(with: url)
                 photoEntries[index].item.image = image
                 imagePublisher.send(photoEntries[index].item)
-                activeTasks.removeValue(forKey: index)
             } catch {
                 print(error)
             }
+            
+            imageItemTasks.removeValue(forKey: index)
         }
         
-        activeTasks.updateValue(task, forKey: index)
+        imageItemTasks[index] = task
     }
         
     func makePhotoItems(_ photos: [Photo]) -> [PhotoItem] {
