@@ -57,7 +57,7 @@ final class PhotosDataService: PhotosDataServiceProtocol {
             let (data, response) = try await session.data(for: request)
             
             try helper.handle(response: response)
-            return try helper.handle(data: data) as [PhotoDTO]
+            return try helper.handle(data: data)
             
         } catch let error as NetworkError {
             throw error
