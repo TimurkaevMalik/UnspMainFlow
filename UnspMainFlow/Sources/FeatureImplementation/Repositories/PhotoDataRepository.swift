@@ -9,21 +9,27 @@ import Foundation
 
 @MainActor
 protocol PhotoDataRepositoryProtocol {
-    func fetch(page: Int, size: Int, token: String) async throws -> [Photo]
+    func fetch(page: Int, size: Int) async throws -> [Photo]
 }
 
 final class PhotoDataRepository: PhotoDataRepositoryProtocol {
     
     #warning("Можно ли напрямую обращаться к форматтерам, а не передавать через инициализатор? Ведь мы и так можем тестировать и нам подменять не нужно.")
     private let dateFormatter = DefaultDateFormatter()
-    
     private let photoDataService: PhotosDataServiceProtocol
+    private let tokenStorage: TokenStorageProtocol
     
-    init(photoDataService: PhotosDataServiceProtocol) {
+    init(
+        photoDataService: PhotosDataServiceProtocol,
+        tokenStorage: TokenStorageProtocol
+    ) {
         self.photoDataService = photoDataService
+        self.tokenStorage = tokenStorage
     }
     
-    func fetch(page: Int, size: Int, token: String) async throws -> [Photo] {
+    func fetch(page: Int, size: Int) async throws -> [Photo] {
+        let token = try tokenStorage.getToken()
+        
         let photosDTO = try await photoDataService.fetchPhotos(
             page: page,
             size: size,

@@ -32,8 +32,8 @@ enum PhotoDataServiceState {
 
 final class PhotosViewModel: PhotosViewModelProtocol {
     
-    let photosState: PassthroughSubject<State, Never>
-    let imagePublisher: PassthroughSubject<ImageItem, Never>
+    let photosState: PassthroughSubject<State, Never> = .init()
+    let imagePublisher: PassthroughSubject<ImageItem, Never> = .init()
     
     private var photoEntries: [(data: Photo, item: ImageItem)] = []
     private var imageItemTasks: [Int: Task<(), Never>] = [:]
@@ -43,20 +43,14 @@ final class PhotosViewModel: PhotosViewModelProtocol {
     
     private let photoDataRepo: PhotoDataRepositoryProtocol
     private let imagesRepo: ImagesRepositoryProtocol
-    #warning("Вынести в репозиторий keychainStorage")
-    private let keychainStorage: KeychainStorageProtocol
     private let dateFormatter = DisplayDateFormatter()
     
     init(
         photoDataRepo: PhotoDataRepositoryProtocol,
         imagesRepo: ImagesRepositoryProtocol,
-        keychainStorage: KeychainStorageProtocol
     ) {
         self.photoDataRepo = photoDataRepo
         self.imagesRepo = imagesRepo
-        self.keychainStorage = keychainStorage
-        photosState = .init()
-        imagePublisher = .init()
     }
     
     func fetchPhotosData() {
@@ -68,17 +62,9 @@ final class PhotosViewModel: PhotosViewModelProtocol {
         
         let task = Task {
             do {
-                if accessToken.isEmpty {
-                    accessToken = try self.keychainStorage.string(forKey: StorageKeys.accessToken.rawValue) ?? ""
-                    
-#warning("remove line")
-                    accessToken = globalToken
-                }
-        
                 var newPhotos = try await photoDataRepo.fetch(
                     page: currentPhotosPage,
-                    size: 20,
-                    token: accessToken
+                    size: 20
                 )
                 
                 ///На стороне Unsplash баг с дупликатами
@@ -106,7 +92,7 @@ final class PhotosViewModel: PhotosViewModelProtocol {
     func fetchImages(for indexes: [Int]) {
         indexes.forEach({ fetchImage(at: $0) })
     }
-        
+    
     func imageItem(at index: Int) -> ImageItem {
         photoEntries[index].item
     }
@@ -147,7 +133,7 @@ private extension PhotosViewModel {
         
         imageItemTasks[index] = task
     }
-        
+    
     func makePhotoItems(_ photos: [Photo]) -> [PhotoItem] {
         photos.enumerated().map({ index, element in
             PhotoItem(
