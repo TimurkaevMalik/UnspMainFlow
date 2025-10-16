@@ -1,5 +1,5 @@
 //
-//  PhotoFeedViewController.swift
+//  PhotoFeedController.swift
 //  AppModule
 //
 //  Created by Malik Timurkaev on 04.10.2025.
@@ -9,7 +9,7 @@ import UIKit
 import CoreKit
 import Combine
 
-final class PhotoFeedViewController: UIViewController {
+final class PhotoFeedController: UIViewController {
     
     private let photoFeedCollectionController: ImageCollectionController
     
@@ -39,7 +39,7 @@ final class PhotoFeedViewController: UIViewController {
     }
 }
 
-private extension PhotoFeedViewController {
+private extension PhotoFeedController {
     func setUI() {
         view.backgroundColor = Palette.Asset.whitePrimary.uiColor
         title = "Photo Feed"

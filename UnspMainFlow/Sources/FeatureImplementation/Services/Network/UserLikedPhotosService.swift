@@ -22,7 +22,7 @@ final class UserLikedPhotosService: UserLikedPhotosServiceProtocol {
     init(
         requestFactory: NetworkRequestFactory,
         helper: NetworkServiceHelper,
-        session: URLSession
+        session: URLSession = .shared
     ) {
         self.requestFactory = requestFactory
         self.helper = helper

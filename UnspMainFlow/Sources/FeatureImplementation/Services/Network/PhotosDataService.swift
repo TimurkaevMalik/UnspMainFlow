@@ -17,7 +17,6 @@ protocol PhotosDataServiceProtocol: Sendable {
     ) async throws(NetworkError) -> [PhotoDTO]
 }
 
-#warning("Реализовать механизм retry")
 final class PhotosDataService: PhotosDataServiceProtocol {
     
     private let requestFactory: NetworkRequestFactory

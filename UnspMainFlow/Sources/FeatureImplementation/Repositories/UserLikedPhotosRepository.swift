@@ -6,14 +6,9 @@
 //
 
 import Foundation
+#warning("Remove")
 
-@MainActor
-protocol UserLikedPhotosRepositoryProtocol {
-    func fetchPhotos(page: Int, size: Int, user: String) async throws -> [Photo]
-}
-
-final class UserLikedPhotosRepository: UserLikedPhotosRepositoryProtocol {
-    
+final class UserLikedPhotosRepository: PhotoDataRepositoryProtocol {
     private let dateFormatter = DefaultDateFormatter()
     private let photoDataService: UserLikedPhotosServiceProtocol
     private let tokenStorage: TokenStorageProtocol
@@ -26,14 +21,14 @@ final class UserLikedPhotosRepository: UserLikedPhotosRepositoryProtocol {
         self.tokenStorage = tokenStorage
     }
     
-    func fetchPhotos(page: Int, size: Int, user: String) async throws -> [Photo] {
+    func fetch(page: Int, size: Int) async throws -> [Photo] {
    
         let token = try tokenStorage.getToken()
-        
+#warning("Set real user")
         let photosDTO = try await photoDataService.fetchPhotos(
             page: page,
             size: size,
-            user: user,
+            user: "andrew9955",
             token: token
         )
         

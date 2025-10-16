@@ -8,6 +8,8 @@
 import UIKit
 import CoreKit
 import Combine
+#warning("Remove KeychainStorageKit")
+import KeychainStorageKit
 
 // MARK: - Lifecycle
 final class ImageCollectionController: UICollectionViewController {
@@ -41,13 +43,11 @@ final class ImageCollectionController: UICollectionViewController {
 }
 
 // MARK: - Bindings
-#warning("Не лишний ли receive(on:)?")
 private extension ImageCollectionController {
     func bindViewModel() {
         vm.photosState
             .receive(on: DispatchQueue.main)
             .sink { [weak self] state in
-#warning("Нужен ли guard?")
                 guard let self else { return }
                 
                 switch state {
@@ -100,7 +100,7 @@ private extension ImageCollectionController {
         vm.fetchPhotosData()
     }
 }
-import KeychainStorageKit
+
 // MARK: - UICollectionViewDelegate
 extension ImageCollectionController {
 #warning("Перенести в Coordinator")

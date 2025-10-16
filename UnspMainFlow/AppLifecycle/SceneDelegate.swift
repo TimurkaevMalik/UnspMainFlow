@@ -30,9 +30,24 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         
         window = UIWindow(windowScene: windowScene)
         
+        let helper = DefaultNetworkServiceHelper()
+        let requestFactory = AuthorizedRequestFactory()
+        let tokenStorage = TokenCache(keychain: SceneDelegate.valet)
+        
+        let usalRepo = PhotoDataRepository(
+            photoDataService: PhotosDataService(
+                requestFactory: requestFactory,
+                helper: helper),
+            tokenStorage: tokenStorage)
+        
+        let likedRepo = UserLikedPhotosRepository(
+            photoDataService: UserLikedPhotosService(
+                requestFactory: requestFactory,
+                helper: helper),
+            tokenStorage: tokenStorage)
+        
         let vm = PhotosViewModel(
-            photoDataRepo: PhotoDataRepository(photoDataService: PhotosDataService(requestFactory: AuthorizedRequestFactory(), helper: DefaultNetworkServiceHelper()), tokenStorage: TokenCache(keychain: SceneDelegate.valet)),
-            
+            photoDataRepo: likedRepo,
             imagesRepo: ImagesRepository(imageService: ImageService()))
         
         let photoFeedCollection = ImageCollectionController(
@@ -40,7 +55,7 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             layoutFactory: TripleSectionLayoutFactory()
         )
         
-        let feedController = PhotoFeedViewController(
+        let feedController = PhotoFeedController(
             photoFeedCollectionController: photoFeedCollection
         )
                 
