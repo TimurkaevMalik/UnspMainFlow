@@ -1,38 +1,39 @@
 //
-//  PhotoDataRepository.swift
+//  UserLikedPhotosRepository.swift
 //  UnspMainFlow
 //
-//  Created by Malik Timurkaev on 07.10.2025.
+//  Created by Malik Timurkaev on 16.10.2025.
 //
 
 import Foundation
 
 @MainActor
-protocol PhotoDataRepositoryProtocol {
-    func fetch(page: Int, size: Int) async throws -> [Photo]
+protocol UserLikedPhotosRepositoryProtocol {
+    func fetchPhotos(page: Int, size: Int, user: String) async throws -> [Photo]
 }
 
-final class PhotoDataRepository: PhotoDataRepositoryProtocol {
+final class UserLikedPhotosRepository: UserLikedPhotosRepositoryProtocol {
     
-    #warning("Можно ли напрямую обращаться к форматтерам, а не передавать через инициализатор? Ведь мы и так можем тестировать и нам подменять не нужно.")
     private let dateFormatter = DefaultDateFormatter()
-    private let photoDataService: PhotosDataServiceProtocol
+    private let photoDataService: UserLikedPhotosServiceProtocol
     private let tokenStorage: TokenStorageProtocol
     
     init(
-        photoDataService: PhotosDataServiceProtocol,
+        photoDataService: UserLikedPhotosServiceProtocol,
         tokenStorage: TokenStorageProtocol
     ) {
         self.photoDataService = photoDataService
         self.tokenStorage = tokenStorage
     }
     
-    func fetch(page: Int, size: Int) async throws -> [Photo] {
+    func fetchPhotos(page: Int, size: Int, user: String) async throws -> [Photo] {
+   
         let token = try tokenStorage.getToken()
         
         let photosDTO = try await photoDataService.fetchPhotos(
             page: page,
             size: size,
+            user: user,
             token: token
         )
         
@@ -40,7 +41,7 @@ final class PhotoDataRepository: PhotoDataRepositoryProtocol {
     }
 }
 
-private extension PhotoDataRepository {
+private extension UserLikedPhotosRepository {
     func makePhotos(_ photosDTO: [PhotoDTO]) -> [Photo] {
         return photosDTO.compactMap({
             
