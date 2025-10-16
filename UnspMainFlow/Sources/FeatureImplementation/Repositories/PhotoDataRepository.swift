@@ -15,7 +15,7 @@ protocol PhotoDataRepositoryProtocol {
 final class PhotoDataRepository: PhotoDataRepositoryProtocol {
     
     #warning("Можно ли напрямую обращаться к форматтерам, а не передавать через инициализатор? Ведь мы и так можем тестировать и нам подменять не нужно.")
-    private let defaultDateFormatter = DefaultDateFormatter()
+    private let dateFormatter = DefaultDateFormatter()
     
     private let photoDataService: PhotosDataServiceProtocol
     
@@ -52,6 +52,6 @@ private extension PhotoDataRepository {
     }
     
     func date(from string: String) -> Date? {
-        defaultDateFormatter.date(from: string)
+        dateFormatter.date(from: string)
     }
 }

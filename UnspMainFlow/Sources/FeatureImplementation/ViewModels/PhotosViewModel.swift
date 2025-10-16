@@ -43,6 +43,7 @@ final class PhotosViewModel: PhotosViewModelProtocol {
     
     private let photoDataRepo: PhotoDataRepositoryProtocol
     private let imagesRepo: ImagesRepositoryProtocol
+    #warning("Вынести в репозиторий keychainStorage")
     private let keychainStorage: KeychainStorageProtocol
     private let dateFormatter = DisplayDateFormatter()
     
