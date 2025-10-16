@@ -10,9 +10,16 @@ import NetworkKit
 
 extension Path {
     static let photos: Path = .segment("photos")
+    static let users: Path = .segment("users")
+    static let likes: Path = .segment("likes")
     static let like: Path = .segment("like")
     
+    
     static func id(_ value: String) -> Path {
-        Path.segment(value)
+        .segment(value)
+    }
+    
+    static func username(_ value: String) -> Path {
+        .segment(value)
     }
 }
