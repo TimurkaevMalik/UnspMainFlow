@@ -13,7 +13,7 @@ import Combine
 final class ImageCollectionController: UICollectionViewController {
     
     private let vm: PhotosViewModel
-    private var cancellables = Set<AnyCancellable>()
+    private var cancellable = Set<AnyCancellable>()
     private lazy var dataSource = makeDataSource()
     private var nextPageTriggerIndex = IndexPath(item: 0, section: 0)
     private let paginationOffset = 5
@@ -60,7 +60,7 @@ private extension ImageCollectionController {
                     print(error)
                 }
             }
-            .store(in: &cancellables)
+            .store(in: &cancellable)
         
         vm.imagePublisher
             .collect(.byTime(DispatchQueue.main, .seconds(1)))
@@ -71,7 +71,7 @@ private extension ImageCollectionController {
             .sink { IDs in
                 self.updateSnapshot(itemsIDs: IDs)
             }
-            .store(in: &cancellables)
+            .store(in: &cancellable)
     }
     
     func handleLoaded(photosData: [PhotoItem]) {

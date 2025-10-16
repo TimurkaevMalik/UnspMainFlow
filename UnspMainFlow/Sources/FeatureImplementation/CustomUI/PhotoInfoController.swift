@@ -8,10 +8,12 @@
 import UIKit
 import CoreKit
 import SnapKit
+import Combine
 
 final class PhotoInfoController: UIViewController {
     
     private let vm: PhotoLikeViewModelProtocol
+    private var cancellable = Set<AnyCancellable>()
     
     private lazy var imageView = {
         let uiView = UIImageView()
@@ -33,7 +35,7 @@ final class PhotoInfoController: UIViewController {
     }()
     
     private lazy var likeButton = {
-        let customView = LikeButton(isLiked: vm.photoItemInfo.likedByUser)
+        let customView = LikeButton(isLiked: vm.photoItemPublisher.value.likedByUser)
         customView.translatesAutoresizingMaskIntoConstraints = false
         customView.addAction(likeButtonAction, for: .touchUpInside)
         return customView
@@ -83,7 +85,6 @@ final class PhotoInfoController: UIViewController {
     init(vm: PhotoLikeViewModelProtocol) {
         self.vm = vm
         super.init(nibName: nil, bundle: nil)
-        imageView.image = vm.image
     }
     
     @available(*, unavailable)
@@ -100,6 +101,34 @@ final class PhotoInfoController: UIViewController {
 }
 
 private extension PhotoInfoController {
+    func bindViewModel() {
+        vm.photoItemPublisher
+            .receive(on: DispatchQueue.main)
+            .sink { completion in
+                switch completion {
+                case .finished:
+                    
+                case .failure(_):
+                    
+                }
+            } receiveValue: { [weak self] item in
+                guard let self else { return }
+                
+                likeButton.isLiked = item.likedByUser
+                dateLabel.text = item.createdAt
+                descriptionTextView.text = item.description
+                likesCountLabel.text = "\(item.likes)"
+            }
+            .store(in: &cancellable)
+        
+        vm.imagePublisher
+            .receive(on: DispatchQueue.main)
+            .map({ $0 })
+            .assign(to: \.image, on: imageView)
+            .store(in: &cancellable)
+        
+    }
+    
     func toggleInfoContainer() {
         switch infoContainerState {
             
@@ -169,7 +198,7 @@ private extension PhotoInfoController {
         let safeArea = view.safeAreaLayoutGuide
         
         title = "Photo"
-        likesCountLabel.text = "\(imageInfo.likes)"
+//        likesCountLabel.text = "\(imageInfo.likes)"
         view.backgroundColor = Palette.Asset.whitePrimary.uiColor
         
         buttonsContainerView.snp.makeConstraints({
@@ -208,8 +237,8 @@ private extension PhotoInfoController {
         dateLabel.backgroundColor = .clear
         descriptionTextView.backgroundColor = .clear
         infoContainerView.backgroundColor = .black.withAlphaComponent(0.3)
-        dateLabel.text = imageInfo.createdAt
-        descriptionTextView.text = imageInfo.description
+//        dateLabel.text = imageInfo.createdAt
+//        descriptionTextView.text = imageInfo.description
         
         infoContainerView.snp.makeConstraints({
             infoContainerViewTopConstraint = $0.top.equalTo(view.snp.bottom).constraint
