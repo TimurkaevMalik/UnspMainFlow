@@ -5,14 +5,13 @@
 //  Created by Malik Timurkaev on 16.10.2025.
 //
 
-import Foundation
 import UIKit
 import Combine
 
 @MainActor
 protocol PhotoLikeViewModelProtocol {
-    var photoItemPublisher: CurrentValueSubject<PhotoItem, Error> { get }
-    var imagePublisher: CurrentValueSubject<UIImage, Never> { get }
+    var photoItemPublisher: CurrentValueSubject<PhotoItem, Never> { get }
+    var imagePublisher: CurrentValueSubject<UIImage?, Never> { get }
     
     func like()
     func unlike()
@@ -20,8 +19,8 @@ protocol PhotoLikeViewModelProtocol {
 
 final class PhotoLikeViewModel: PhotoLikeViewModelProtocol {
     
-    var photoItemPublisher: CurrentValueSubject<PhotoItem, Error>
-    var imagePublisher: CurrentValueSubject<UIImage, Never>
+    var photoItemPublisher: CurrentValueSubject<PhotoItem, Never>
+    var imagePublisher: CurrentValueSubject<UIImage?, Never>
     
     private let likeRepo: PhotoLikeRepositoryProtocol
     private let dateFormatter = DisplayDateFormatter()

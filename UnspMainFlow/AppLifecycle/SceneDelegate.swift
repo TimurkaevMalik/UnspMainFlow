@@ -15,7 +15,7 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     
     var window: UIWindow?
     #warning("Remove valet")
-    let valet = ValetStorage(
+    static let valet = ValetStorage(
         id: "n",
         accessibility: .whenUnlockedThisDeviceOnly,
         logger: nil
@@ -31,7 +31,7 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         window = UIWindow(windowScene: windowScene)
         
         let vm = PhotosViewModel(
-            photoDataRepo: PhotoDataRepository(photoDataService: PhotosDataService(requestFactory: AuthorizedRequestFactory(), helper: DefaultNetworkServiceHelper()), tokenStorage: TokenCache(keychain: valet)),
+            photoDataRepo: PhotoDataRepository(photoDataService: PhotosDataService(requestFactory: AuthorizedRequestFactory(), helper: DefaultNetworkServiceHelper()), tokenStorage: TokenCache(keychain: SceneDelegate.valet)),
             
             imagesRepo: ImagesRepository(imageService: ImageService()))
         

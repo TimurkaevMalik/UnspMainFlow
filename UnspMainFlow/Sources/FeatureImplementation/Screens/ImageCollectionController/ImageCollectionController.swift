@@ -100,7 +100,7 @@ private extension ImageCollectionController {
         vm.fetchPhotosData()
     }
 }
-
+import KeychainStorageKit
 // MARK: - UICollectionViewDelegate
 extension ImageCollectionController {
 #warning("Перенести в Coordinator")
@@ -110,7 +110,8 @@ extension ImageCollectionController {
     ) {
         guard let image = vm.imageItem(at: indexPath.item).image else { return }
         let photoItem = vm.photoItem(at: indexPath.item)
-        let vc = PhotoInfoController(image: image, info: photoItem)
+        let viewModel = PhotoLikeViewModel(likeRepo: PhotoLikeRepository(likeService: PhotoLikeService(requestFactory: AuthorizedRequestFactory(), helper: DefaultNetworkServiceHelper()), tokenStorage: TokenCache(keychain: SceneDelegate.valet)), photoItem: photoItem, image: image)
+        let vc = PhotoInfoController(vm: viewModel)
         
         navigationController?.pushViewController(vc, animated: true)
     }

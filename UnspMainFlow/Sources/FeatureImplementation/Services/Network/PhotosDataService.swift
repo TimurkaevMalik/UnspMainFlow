@@ -23,17 +23,14 @@ final class PhotosDataService: PhotosDataServiceProtocol {
     private let requestFactory: NetworkRequestFactory
     private let helper: NetworkServiceHelper
     private let session: URLSession
-    private let decoder: JSONDecoder
     
     init(
         requestFactory: NetworkRequestFactory,
         helper: NetworkServiceHelper,
-        session: URLSession = .shared,
-        decoder: JSONDecoder = JSONDecoder()
+        session: URLSession = .shared
     ) {
         self.requestFactory = requestFactory
         self.helper = helper
-        self.decoder = decoder
         self.session = session
     }
     

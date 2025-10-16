@@ -19,18 +19,15 @@ final class PhotoLikeService: PhotoLikeServiceProtocol {
     private let requestFactory: NetworkRequestFactory
     private let helper: NetworkServiceHelper
     private let session: URLSession
-    private let decoder: JSONDecoder
     
     init(
         requestFactory: NetworkRequestFactory,
         helper: NetworkServiceHelper,
         session: URLSession = .shared,
-        decoder: JSONDecoder = JSONDecoder()
     ) {
         self.requestFactory = requestFactory
         self.helper = helper
         self.session = session
-        self.decoder = decoder
     }
     
     func like(photoID: String, token: String) async throws(NetworkError) -> PhotoDTO {
