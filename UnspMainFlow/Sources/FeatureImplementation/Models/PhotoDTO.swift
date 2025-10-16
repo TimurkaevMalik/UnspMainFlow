@@ -8,6 +8,7 @@
 import Foundation
 import NetworkKit
 
+///Models for Data layer
 struct PhotoDTO: Decodable {
     let id: String
     let urls: PhotoURLs
@@ -23,7 +24,6 @@ struct PhotoDTO: Decodable {
     }
 }
 
-struct PhotoURLs: Decodable {
-    let small: String
-    let full: String
+struct LikeResponseDTO: Decodable {
+    let photo: PhotoDTO
 }

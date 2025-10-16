@@ -7,7 +7,7 @@
 
 import UIKit
 
-///Presentation layer
+///Model for Presentation layer
 struct PhotoItem {
     let id: String
     let index: Int

@@ -7,7 +7,7 @@
 
 import Foundation
 
-///Domain layer
+///Model for Domain layer
 struct Photo {
     let id: String
     let urls: PhotoURLs

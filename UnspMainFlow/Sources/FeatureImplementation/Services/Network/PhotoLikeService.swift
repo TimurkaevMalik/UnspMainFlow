@@ -41,11 +41,8 @@ final class PhotoLikeService: PhotoLikeServiceProtocol {
 
 private extension PhotoLikeService {
     func performRequest(id: String, token: String, method: HTTPMethod) async throws(NetworkError) -> PhotoDTO {
-        guard let url = makeURL(withID: id) else {
-            throw .invalidURL
-        }
         
-        print(url)
+        guard let url = makeURL(withID: id) else { throw .invalidURL }
         
         let request = requestFactory.makeURLRequest(
             for: url,
@@ -57,8 +54,8 @@ private extension PhotoLikeService {
             let (data, resp) = try await session.data(for: request)
             
             try helper.handle(response: resp)
-            return try helper.handle(data: data) 
-            
+            let response: LikeResponseDTO = try helper.handle(data: data)
+            return response.photo
         } catch let error as NetworkError {
             throw error
         } catch {

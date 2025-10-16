@@ -8,6 +8,7 @@
 import Foundation
 import UIKit
 
+///Model for Presentation layer
 struct ImageItem: Hashable, Identifiable {
     var id: String
     let index: Int
