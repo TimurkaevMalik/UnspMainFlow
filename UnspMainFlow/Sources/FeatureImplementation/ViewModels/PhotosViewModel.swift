@@ -59,7 +59,7 @@ final class PhotosViewModel: PhotosViewModelProtocol {
     
     func fetchPhotosData() {
         updatePhotosState(.loading)
-        currentPhotosPage += 1
+        
         
         Task {
             do {
@@ -69,12 +69,13 @@ final class PhotosViewModel: PhotosViewModelProtocol {
 #warning("remove line")
                     accessToken = globalToken
                 }
-                
+                currentPhotosPage += 1
                 var newPhotos = try await photoDataRepo.fetch(
                     page: currentPhotosPage,
                     size: 20,
                     token: accessToken
                 )
+                
                 ///На стороне Unsplash баг с дупликатами
                 ///Использую костыль ниже
                 newPhotos.removeLast(3)
@@ -96,7 +97,7 @@ final class PhotosViewModel: PhotosViewModelProtocol {
     func fetchImages(for indexes: [Int]) {
         indexes.forEach({ fetchImage(at: $0) })
     }
-    
+        
     func imageItem(at index: Int) -> ImageItem {
         photoEntries[index].item
     }
@@ -136,7 +137,7 @@ private extension PhotosViewModel {
         
         activeTasks.updateValue(task, forKey: index)
     }
-    
+        
     func makePhotoItems(_ photos: [Photo]) -> [PhotoItem] {
         photos.enumerated().map({ index, element in
             PhotoItem(

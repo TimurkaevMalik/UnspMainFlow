@@ -35,9 +35,6 @@ final class ImageCollectionController: UICollectionViewController {
         configureCollection()
         bindViewModel()
         vm.fetchPhotosData()
-        DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
-            self.vm.fetchPhotosData()
-        }
     }
 }
 
@@ -77,14 +74,12 @@ private extension ImageCollectionController {
     }
     
     func updateSnapshot(itemsIDs: [String]) {
-        print(itemsIDs)
         var snapshot = dataSource.snapshot()
         snapshot.reconfigureItems(itemsIDs)
         dataSource.apply(snapshot, animatingDifferences: true)
     }
 
     func apply(itemsIDs: [String]) {
-        print(itemsIDs)
         var snapshot = dataSource.snapshot()
         snapshot.appendItems(itemsIDs, toSection: .main)
         dataSource.apply(snapshot, animatingDifferences: true)
@@ -106,17 +101,11 @@ extension ImageCollectionController {
     }
 }
 
-// MARK: - UICollectionViewDataSourcePrefetching
-extension ImageCollectionController: UICollectionViewDataSourcePrefetching {
-    func collectionView(_ collectionView: UICollectionView, prefetchItemsAt indexPaths: [IndexPath]) {}
-}
-
 //MARK: - Configuration
 private extension ImageCollectionController {
     func configureCollection() {
         collectionView.backgroundColor = Palette.Asset.whitePrimary.uiColor
         collectionView.dataSource = dataSource
-        collectionView.prefetchDataSource = self
         collectionView.register(Cell.self, identifier: Cell.identifier)
     }
     
@@ -135,7 +124,6 @@ private extension ImageCollectionController {
     
     func makeCellRegistration() -> CellRegistration {
         CellRegistration { cell, indexPath, id in
-            print("register", indexPath.item)
             if let image = self.vm.imageItem(at: indexPath.item).image {
                 cell.set(image: image)
             } else {
