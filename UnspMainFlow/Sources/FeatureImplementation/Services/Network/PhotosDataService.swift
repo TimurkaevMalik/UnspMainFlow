@@ -20,13 +20,19 @@ protocol PhotosDataServiceProtocol: Sendable {
 #warning("Реализовать механизм retry")
 final class PhotosDataService: PhotosDataServiceProtocol {
     
+    private let requestFactory: NetworkRequestFactory
+    private let helper: NetworkServiceHelper
+    private let session: URLSession
     private let decoder: JSONDecoder
-    let session: URLSession
     
     init(
-        decoder: JSONDecoder = JSONDecoder(),
-        session: URLSession = .shared
+        requestFactory: NetworkRequestFactory,
+        helper: NetworkServiceHelper,
+        session: URLSession = .shared,
+        decoder: JSONDecoder = JSONDecoder()
     ) {
+        self.requestFactory = requestFactory
+        self.helper = helper
         self.decoder = decoder
         self.session = session
     }
@@ -41,14 +47,17 @@ final class PhotosDataService: PhotosDataServiceProtocol {
             throw .invalidURL
         }
         
-        let request = makeURLRequest(for: url, token: token)
+        let request = requestFactory.makeURLRequest(
+            for: url,
+            token: token,
+            method: .get
+        )
         
         do {
             let (data, response) = try await session.data(for: request)
             
-            try handle(response: response)
-            let photos = try handle(data: data)
-            return photos
+            try helper.handle(response: response)
+            return try helper.handle(data: data) as [PhotoDTO]
             
         } catch let error as NetworkError {
             throw error
@@ -59,42 +68,6 @@ final class PhotosDataService: PhotosDataServiceProtocol {
 }
 
 private extension PhotosDataService {
-    func handle(response: URLResponse) throws(NetworkError) {
-        guard let httpResp = response as? HTTPURLResponse else {
-            throw .transport(underlying: URLError(.badServerResponse))
-        }
-        
-        guard (200...299).contains(httpResp.statusCode) else {
-            throw .httpStatus(httpResp.statusCode)
-        }
-    }
-    
-    func handle(data: Data) throws -> [PhotoDTO] {
-        do {
-            return try decoder.decode([PhotoDTO].self, from: data)
-        } catch {
-            throw NetworkError.decodingFailed(underlying: error)
-        }
-    }
-    
-    func makeURLRequest(for url: URL, token: String) -> URLRequest {
-        let acceptVersion = HTTPHeaderField.acceptVersion.rawValue
-        let authorization = HTTPHeaderField.authorization.rawValue
-        let accept = HTTPHeaderField.accept.rawValue
-        
-        let bearerValue = HTTPHeaderValue.bearer(token).value
-        let apiVersionValue = HTTPHeaderValue.apiVersion.value
-        let apiJsonValue = HTTPHeaderValue.appJSON.value
-        
-        var request = URLRequest(url: url)
-        request.httpMethod = HTTPMethod.get.rawValue
-        request.addValue(bearerValue, forHTTPHeaderField: authorization)
-        request.addValue(apiVersionValue, forHTTPHeaderField: acceptVersion)
-        request.addValue(apiJsonValue, forHTTPHeaderField: accept)
-        
-        return request
-    }
-    
     func makeURL(page: Int, size: Int) -> URL? {
         URLBuilder()
             .scheme(Scheme.https.rawValue)

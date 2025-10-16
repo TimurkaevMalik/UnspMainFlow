@@ -25,7 +25,7 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         window = UIWindow(windowScene: windowScene)
         
         let vm = PhotosViewModel(
-            photoDataRepo: PhotoDataRepository(photoDataService: PhotosDataService()),
+            photoDataRepo: PhotoDataRepository(photoDataService: PhotosDataService(requestFactory: AuthorizedRequestFactory(), helper: DefaultNetworkServiceHelper())),
             imagesRepo: ImagesRepository(imageService: ImageService()),
             keychainStorage: ValetStorage(id: "n", accessibility: .whenUnlockedThisDeviceOnly, logger: nil)!)
         
