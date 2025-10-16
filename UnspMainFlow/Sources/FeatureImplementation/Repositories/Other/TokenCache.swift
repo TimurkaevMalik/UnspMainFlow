@@ -30,6 +30,8 @@ final class TokenCache: TokenStorageProtocol {
 
         
         cachedToken = try keychain.string(forKey: StorageKeys.accessToken.rawValue) ?? ""
+        
+        #warning("Remove global token")
         cachedToken = globalToken
 
         return cachedToken

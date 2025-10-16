@@ -11,6 +11,8 @@ import SnapKit
 
 final class PhotoInfoController: UIViewController {
     
+    private let vm: PhotoLikeViewModelProtocol
+    
     private lazy var imageView = {
         let uiView = UIImageView()
         uiView.translatesAutoresizingMaskIntoConstraints = false
@@ -31,7 +33,7 @@ final class PhotoInfoController: UIViewController {
     }()
     
     private lazy var likeButton = {
-        let customView = LikeButton(isLiked: imageInfo.likedByUser)
+        let customView = LikeButton(isLiked: vm.photoItemInfo.likedByUser)
         customView.translatesAutoresizingMaskIntoConstraints = false
         customView.addAction(likeButtonAction, for: .touchUpInside)
         return customView
@@ -77,12 +79,11 @@ final class PhotoInfoController: UIViewController {
         return CGPoint(x: x, y: y)
     }()
     
-    private let imageInfo: PhotoItem
     
-    init(image: UIImage, info: PhotoItem) {
-        imageInfo = info
+    init(vm: PhotoLikeViewModelProtocol) {
+        self.vm = vm
         super.init(nibName: nil, bundle: nil)
-        imageView.image = image
+        imageView.image = vm.image
     }
     
     @available(*, unavailable)
