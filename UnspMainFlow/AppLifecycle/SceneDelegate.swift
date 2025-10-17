@@ -25,9 +25,8 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         
         window.rootViewController = navigation
         self.window = window
-        window.makeKeyAndVisible()
         
-        featureCoordinator = RootUnspMainFlowCoordinator(navigation: navigation)
+        featureCoordinator = RootUnspMainFlowCoordinator(window: window)
         featureCoordinator?.start()
     }
 }

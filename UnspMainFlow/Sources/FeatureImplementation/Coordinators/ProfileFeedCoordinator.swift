@@ -51,6 +51,7 @@ extension ProfileFeedCoordinator: ImageCollectionControllerOutput {
             image: image
         )
         
+        vc.hidesBottomBarWhenPushed = true
         navigation.pushViewController(vc, animated: true)
         navigation.setNavigationBarHidden(false, animated: false)
     }

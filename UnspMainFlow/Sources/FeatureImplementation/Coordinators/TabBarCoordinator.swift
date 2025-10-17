@@ -20,17 +20,14 @@ final class TabBarCoordinator: TabBarCoordinatorProtocol, CompositionCoordinator
     var children: [Coordinator] = []
     weak var finishDelegate: CoordinatorFinishDelegate?
     
-    private let navigation: UINavigationController
     private let keychain: KeychainStorageProtocol
     
     
     init(
         finishDelegate: CoordinatorFinishDelegate? = nil,
-        navigation: UINavigationController,
         keychain: KeychainStorageProtocol
     ) {
         self.finishDelegate = finishDelegate
-        self.navigation = navigation
         self.keychain = keychain
     }
     
@@ -77,15 +74,9 @@ private extension TabBarCoordinator {
             [feedNav, profileNav],
             animated: false
         )
-        navigation.setViewControllers(
-            [tabBarController],
-            animated: true
-        )
-        
+
         children = [feedCoordinator, profileCoordinator]
         
-#warning("Можно ли так скрывать NavigationBar у TabBarController или лучше передавать его в window? Дело в том. что я кладу tabBarController в navigation, но и дочерние контроллеры у tabBarController имеют свои UINavigationController - и получается у меня два navigationBar на экране")
-        navigation.setNavigationBarHidden(true, animated: false)
         feedNav.setNavigationBarHidden(true, animated: false)
         profileNav.setNavigationBarHidden(true, animated: false)
     }

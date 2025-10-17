@@ -15,15 +15,15 @@ public final class RootUnspMainFlowCoordinator: FlowCoordinator {
     public var child: Coordinator?
     public weak var finishDelegate: CoordinatorFinishDelegate?
     
-    private let navigation: UINavigationController
+    private let window: UIWindow
     private let keychainFactory = KeychainStorageFactory()
     
     public init(
         finishDelegate: CoordinatorFinishDelegate? = nil,
-        navigation: UINavigationController,
+        window: UIWindow
     ) {
         self.finishDelegate = finishDelegate
-        self.navigation = navigation
+        self.window = window
     }
     
     public func start() {
@@ -31,13 +31,16 @@ public final class RootUnspMainFlowCoordinator: FlowCoordinator {
         let keychain = ValetStorage(id: " ", accessibility: .whenUnlockedThisDeviceOnly, logger: nil)
         
         if let keychain  {
-            child = TabBarCoordinator(
+            let tabBarCoordinator = TabBarCoordinator(
                 finishDelegate: self,
-                navigation: navigation,
                 keychain: keychain
             )
             
+            child = tabBarCoordinator
             child?.start()
+            window.rootViewController = tabBarCoordinator.tabBarController
+            window.makeKeyAndVisible()
+            
         } else {
             print("finish")
             finish()
