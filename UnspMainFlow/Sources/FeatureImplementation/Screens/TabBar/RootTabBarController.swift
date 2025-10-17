@@ -12,8 +12,8 @@ final class RootTabBarController: UITabBarController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        title = "TabBar"
         setupAppearance()
-        setupTabs()
     }
 }
 
@@ -22,6 +22,4 @@ private extension RootTabBarController {
         tabBar.tintColor = Palette.Asset.blackPrimary.uiColor
         tabBar.backgroundColor = Palette.Asset.whitePrimary.uiColor
     }
-    
-    func setupTabs() {}
 }

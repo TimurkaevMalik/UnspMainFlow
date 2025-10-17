@@ -9,22 +9,28 @@ import UIKit
 import CoreKit
 import KeychainStorageKit
 
-final class TabBarCoordinator: CompositionCoordinator {
+@MainActor
+protocol TabBarCoordinatorProtocol {
+    var tabBarController: UITabBarController { get }
+}
+
+final class TabBarCoordinator: TabBarCoordinatorProtocol, CompositionCoordinator {
     
+    let tabBarController: UITabBarController = RootTabBarController()
     var children: [Coordinator] = []
     weak var finishDelegate: CoordinatorFinishDelegate?
     
-    private let navigation: UINavigationController
+    private let window: UIWindow
     private let keychain: KeychainStorageProtocol
-    private let tabBarController = RootTabBarController()
+    
     
     init(
         finishDelegate: CoordinatorFinishDelegate? = nil,
-        navigation: UINavigationController,
+        window: UIWindow,
         keychain: KeychainStorageProtocol
     ) {
         self.finishDelegate = finishDelegate
-        self.navigation = navigation
+        self.window = window
         self.keychain = keychain
     }
     
@@ -63,11 +69,8 @@ private extension TabBarCoordinator {
             [feedNav, profileNav],
             animated: false
         )
-        navigation.setViewControllers(
-            [tabBarController],
-            animated: false
-        )
-#warning("Set ProfileCoordinator")
+        window.rootViewController = tabBarController
+        
         children = [feedCoordinator, ]
     }
 }

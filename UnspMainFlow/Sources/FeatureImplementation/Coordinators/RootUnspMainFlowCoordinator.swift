@@ -15,16 +15,16 @@ final class RootUnspMainFlowCoordinator: FlowCoordinator {
     var child: Coordinator?
     weak var finishDelegate: CoordinatorFinishDelegate?
     
-    private let navigation: UINavigationController
+    private let window: UIWindow
     private let keychainFactory: KeychainStorageFactory
     
     init(
         finishDelegate: CoordinatorFinishDelegate? = nil,
-        navigation: UINavigationController,
+        window: UIWindow,
         keychainFactory: KeychainStorageFactory = KeychainStorageFactory()
     ) {
         self.finishDelegate = finishDelegate
-        self.navigation = navigation
+        self.window = window
         self.keychainFactory = keychainFactory
     }
     
@@ -36,9 +36,10 @@ final class RootUnspMainFlowCoordinator: FlowCoordinator {
         if let keychain  {
             child = TabBarCoordinator(
                 finishDelegate: self,
-                navigation: navigation,
+                window: window,
                 keychain: keychain
             )
+            
             child?.start()
         } else {
             print("finish")
