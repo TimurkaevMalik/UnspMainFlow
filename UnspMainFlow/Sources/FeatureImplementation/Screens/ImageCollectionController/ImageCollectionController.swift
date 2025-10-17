@@ -8,8 +8,6 @@
 import UIKit
 import CoreKit
 import Combine
-#warning("Remove KeychainStorageKit")
-import KeychainStorageKit
 
 // MARK: - Lifecycle
 final class ImageCollectionController: UICollectionViewController {
@@ -88,7 +86,7 @@ private extension ImageCollectionController {
         snapshot.reconfigureItems(itemsIDs)
         dataSource.apply(snapshot, animatingDifferences: true)
     }
-
+    
     func apply(itemsIDs: [String]) {
         var snapshot = dataSource.snapshot()
         snapshot.appendItems(itemsIDs, toSection: .main)
@@ -110,10 +108,6 @@ extension ImageCollectionController {
     ) {
         guard let image = vm.imageItem(at: indexPath.item).image else { return }
         let photoItem = vm.photoItem(at: indexPath.item)
-        let viewModel = PhotoLikeViewModel(likeRepo: PhotoLikeRepository(likeService: PhotoLikeService(requestFactory: AuthorizedRequestFactory(), helper: DefaultNetworkServiceHelper()), tokenStorage: TokenCache(keychain: SceneDelegate.valet)), photoItem: photoItem, image: image)
-        let vc = PhotoInfoController(vm: viewModel)
-        
-        navigationController?.pushViewController(vc, animated: true)
     }
 }
 
@@ -139,7 +133,7 @@ private extension ImageCollectionController {
         snapshot.appendSections([.main])
         dataSource.apply(snapshot)
     }
-
+    
     func makeDataSource() -> DataSource {
         UICollectionViewDiffableDataSource(
             collectionView: collectionView,
