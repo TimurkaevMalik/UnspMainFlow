@@ -1,5 +1,5 @@
 //
-//  PhotoFeedCoordinator.swift
+//  ProfileFeedCoordinator.swift
 //  UnspMainFlow
 //
 //  Created by Malik Timurkaev on 17.10.2025.
@@ -9,13 +9,13 @@ import UIKit
 import CoreKit
 import KeychainStorageKit
 
-final class PhotoFeedCoordinator: Coordinator {
+final class ProfileFeedCoordinator: Coordinator {
     
     weak var finishDelegate: CoordinatorFinishDelegate?
     
     private let navigation: UINavigationController
     private let keychain: KeychainStorageProtocol
-    private let photoFeedFactory = PhotoFeedControllerFactory()
+    private let profileControllerFactory = ProfileControllerFactory()
     
     init(
         finishDelegate: CoordinatorFinishDelegate? = nil,
@@ -28,13 +28,13 @@ final class PhotoFeedCoordinator: Coordinator {
     }
     
     func start() {
-        showPhotoFeedScreen()
+        showProfileScreen()
     }
 }
 
-private extension PhotoFeedCoordinator {
-    func showPhotoFeedScreen() {
-        let vc = photoFeedFactory.makeWith(
+private extension ProfileFeedCoordinator {
+    func showProfileScreen() {
+        let vc = profileControllerFactory.makeWith(
             tokenStorage: TokenCache(keychain: keychain)
         )
         navigation.setViewControllers([vc], animated: true)

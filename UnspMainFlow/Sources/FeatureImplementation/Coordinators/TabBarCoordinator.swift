@@ -20,17 +20,17 @@ final class TabBarCoordinator: TabBarCoordinatorProtocol, CompositionCoordinator
     var children: [Coordinator] = []
     weak var finishDelegate: CoordinatorFinishDelegate?
     
-    private let window: UIWindow
+    private let navigation: UINavigationController
     private let keychain: KeychainStorageProtocol
     
     
     init(
         finishDelegate: CoordinatorFinishDelegate? = nil,
-        window: UIWindow,
+        navigation: UINavigationController,
         keychain: KeychainStorageProtocol
     ) {
         self.finishDelegate = finishDelegate
-        self.window = window
+        self.navigation = navigation
         self.keychain = keychain
     }
     
@@ -43,6 +43,7 @@ private extension TabBarCoordinator {
     func showTabBarController() {
         // MARK: - Feed tab
         let feedNav = UINavigationController()
+        
         let feedCoordinator = PhotoFeedCoordinator(
             finishDelegate: self,
             navigation: feedNav,
@@ -59,6 +60,13 @@ private extension TabBarCoordinator {
         // MARK: - Profile tab
         let profileNav = UINavigationController()
         
+        let profileCoordinator = ProfileFeedCoordinator(
+            finishDelegate: self,
+            navigation: profileNav,
+            keychain: keychain
+        )
+        profileCoordinator.start()
+        
         profileNav.tabBarItem = UITabBarItem(
             title: "Profile",
             image: UIImage(systemName: "person"),
@@ -69,8 +77,16 @@ private extension TabBarCoordinator {
             [feedNav, profileNav],
             animated: false
         )
-        window.rootViewController = tabBarController
+        navigation.setViewControllers(
+            [tabBarController],
+            animated: true
+        )
         
-        children = [feedCoordinator, ]
+        children = [feedCoordinator, profileCoordinator]
+        
+#warning("Можно ли так скрывать NavigationBar у TabBarController или лучше передавать его в window? Дело в том. что я кладу tabBarController в navigation, но и дочерние контроллеры у tabBarController имеют свои UINavigationController - и получается у меня два navigationBar на экране")
+        navigation.setNavigationBarHidden(true, animated: false)
+        feedNav.setNavigationBarHidden(true, animated: false)
+        profileNav.setNavigationBarHidden(true, animated: false)
     }
 }

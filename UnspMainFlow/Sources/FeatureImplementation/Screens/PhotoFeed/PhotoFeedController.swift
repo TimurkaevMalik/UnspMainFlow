@@ -41,7 +41,7 @@ final class PhotoFeedController: UIViewController {
 
 private extension PhotoFeedController {
     func setUI() {
-        view.backgroundColor = Palette.Asset.whitePrimary.uiColor
+        rootView.backgroundColor = Palette.Asset.whitePrimary.uiColor
         title = "Photo Feed"
     }
 }

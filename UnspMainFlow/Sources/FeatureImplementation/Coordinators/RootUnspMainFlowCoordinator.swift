@@ -10,33 +10,30 @@ import CoreKit
 import KeychainStorageKit
 import HelpersSharedUnsp
 
-final class RootUnspMainFlowCoordinator: FlowCoordinator {
+public final class RootUnspMainFlowCoordinator: FlowCoordinator {
     
-    var child: Coordinator?
-    weak var finishDelegate: CoordinatorFinishDelegate?
+    public var child: Coordinator?
+    public weak var finishDelegate: CoordinatorFinishDelegate?
     
-    private let window: UIWindow
-    private let keychainFactory: KeychainStorageFactory
+    private let navigation: UINavigationController
+    private let keychainFactory = KeychainStorageFactory()
     
-    init(
+    public init(
         finishDelegate: CoordinatorFinishDelegate? = nil,
-        window: UIWindow,
-        keychainFactory: KeychainStorageFactory = KeychainStorageFactory()
+        navigation: UINavigationController,
     ) {
         self.finishDelegate = finishDelegate
-        self.window = window
-        self.keychainFactory = keychainFactory
+        self.navigation = navigation
     }
     
-    func start() {
+    public func start() {
 #warning("remove ValetStorage")
         let keychain = ValetStorage(id: " ", accessibility: .whenUnlockedThisDeviceOnly, logger: nil)
         
-#warning("Set makeAuthorizedKeychain()")
         if let keychain  {
             child = TabBarCoordinator(
                 finishDelegate: self,
-                window: window,
+                navigation: navigation,
                 keychain: keychain
             )
             
@@ -47,7 +44,7 @@ final class RootUnspMainFlowCoordinator: FlowCoordinator {
         }
     }
     
-    func didFinishChild(_ coordinator: Coordinator) {}
+    public func didFinishChild(_ coordinator: Coordinator) {}
 }
 
 private extension RootUnspMainFlowCoordinator {
