@@ -6,7 +6,6 @@
 //
 
 import Foundation
-#warning("Remove")
 
 final class UserLikedPhotosRepository: PhotoDataRepositoryProtocol {
     private let dateFormatter = DefaultDateFormatter()
