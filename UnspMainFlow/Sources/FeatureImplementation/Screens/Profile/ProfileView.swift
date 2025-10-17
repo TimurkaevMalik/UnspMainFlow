@@ -8,6 +8,7 @@
 import UIKit
 import SnapKit
 import CoreKit
+import KeychainStorageKit
 
 final class ProfileView: UIView {
     
@@ -17,7 +18,7 @@ final class ProfileView: UIView {
     private lazy var avatarImageView = UIImageView()
     private lazy var nameLabel = UILabel()
     private lazy var nicknameLabel = UILabel()
-        
+      
     func setupUI() {
         setupSubViews()
         setupLayout()

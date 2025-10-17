@@ -1,5 +1,5 @@
 //
-//  PhotoSearchService.swift
+//  PhotosSearchService.swift
 //  UnspMainFlow
 //
 //  Created by Malik Timurkaev on 18.10.2025.
@@ -9,7 +9,7 @@ import Foundation
 import NetworkKit
 import HelpersSharedUnsp
 
-protocol PhotoSearchServiceProtocol: Sendable {
+protocol PhotosSearchServiceProtocol: Sendable {
     func searchPhotos(
         page: Int,
         size: Int,
@@ -18,7 +18,7 @@ protocol PhotoSearchServiceProtocol: Sendable {
     ) async throws(NetworkError) -> [PhotoDTO]
 }
 
-final class PhotoSearchService: PhotoSearchServiceProtocol {
+final class PhotosSearchService: PhotosSearchServiceProtocol {
     
     private let requestFactory: NetworkRequestFactory
     private let helper: NetworkServiceHelper
@@ -68,7 +68,7 @@ final class PhotoSearchService: PhotoSearchServiceProtocol {
     }
 }
 
-private extension PhotoSearchService {
+private extension PhotosSearchService {
     func makeURL(query: String, page: Int, size: Int) -> URL? {
         URLBuilder()
             .scheme(Scheme.https.rawValue)
