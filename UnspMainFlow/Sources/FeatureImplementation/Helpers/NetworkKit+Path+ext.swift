@@ -13,7 +13,7 @@ extension Path {
     static let users: Path = .segment("users")
     static let likes: Path = .segment("likes")
     static let like: Path = .segment("like")
-    
+    static let search: Path = .segment("search")
     
     static func id(_ value: String) -> Path {
         .segment(value)

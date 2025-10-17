@@ -24,6 +24,12 @@ struct PhotoDTO: Decodable {
     }
 }
 
+///Wrapper for liked/unliked photo response
 struct LikeResponseDTO: Decodable {
     let photo: PhotoDTO
+}
+
+///Wrapper for searched photos response
+struct SearchedPhotosDTO: Decodable {
+    let results: [PhotoDTO]
 }
