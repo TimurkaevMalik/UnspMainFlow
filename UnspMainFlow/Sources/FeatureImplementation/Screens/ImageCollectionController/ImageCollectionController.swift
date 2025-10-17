@@ -9,9 +9,15 @@ import UIKit
 import CoreKit
 import Combine
 
+@MainActor
+protocol ImageCollectionControllerOutput: AnyObject {
+    func show(image: UIImage, data: PhotoItem)
+}
+
 // MARK: - Lifecycle
 final class ImageCollectionController: UICollectionViewController {
     
+    private weak var output: ImageCollectionControllerOutput?
     private let vm: PhotosViewModel
     private var cancellable = Set<AnyCancellable>()
     private lazy var dataSource = makeDataSource()
@@ -19,9 +25,11 @@ final class ImageCollectionController: UICollectionViewController {
     private let paginationOffset = 5
     
     init(
+        output: ImageCollectionControllerOutput? = nil,
         vm: PhotosViewModel,
         layoutFactory: CollectionCompositionalLayoutFactory
     ) {
+        self.output = output
         self.vm = vm
         super.init(collectionViewLayout: layoutFactory.make())
     }
@@ -101,13 +109,13 @@ private extension ImageCollectionController {
 
 // MARK: - UICollectionViewDelegate
 extension ImageCollectionController {
-#warning("Перенести в Coordinator")
     override func collectionView(
         _ collectionView: UICollectionView,
         didSelectItemAt indexPath: IndexPath
     ) {
         guard let image = vm.imageItem(at: indexPath.item).image else { return }
         let photoItem = vm.photoItem(at: indexPath.item)
+        output?.show(image: image, data: photoItem)
     }
 }
 

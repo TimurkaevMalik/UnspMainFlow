@@ -1,5 +1,5 @@
 //
-//  ProfileControllerFactory.swift
+//  PhotoFeedControllerFactory.swift
 //  UnspMainFlow
 //
 //  Created by Malik Timurkaev on 17.10.2025.
@@ -8,18 +8,21 @@
 import UIKit
 
 @MainActor
-final class ProfileControllerFactory {
+final class PhotoFeedControllerFactory {
     
-    func makeWith(tokenStorage: TokenStorageProtocol) -> UIViewController {
+    func makeWith(
+        tokenStorage: TokenStorageProtocol,
+        output: ImageCollectionControllerOutput? = nil
+    ) -> UIViewController {
         let requestFactory = AuthorizedRequestFactory()
         let networkHelper = DefaultNetworkServiceHelper()
         
-        let likedPhotosService = UserLikedPhotosService(
+        let photoDataService = PhotosDataService(
             requestFactory: requestFactory,
             helper: networkHelper
         )
-        let likedPhotoRepository = UserLikedPhotosRepository(
-            photoDataService: likedPhotosService,
+        let photoDataRepo = PhotoDataRepository(
+            photoDataService: photoDataService,
             tokenStorage: tokenStorage
         )
         
@@ -27,13 +30,14 @@ final class ProfileControllerFactory {
         let imagesRepo = ImagesRepository(imageService: imageService)
         
         let viewModel = PhotosViewModel(
-            photoDataRepo: likedPhotoRepository,
+            photoDataRepo: photoDataRepo,
             imagesRepo: imagesRepo
         )
         
         let layoutFactory = TripleSectionLayoutFactory()
         
         let imageCollectionController = ImageCollectionController(
+            output: output,
             vm: viewModel,
             layoutFactory: layoutFactory
         )

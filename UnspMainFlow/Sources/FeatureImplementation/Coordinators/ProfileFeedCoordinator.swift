@@ -16,6 +16,7 @@ final class ProfileFeedCoordinator: Coordinator {
     private let navigation: UINavigationController
     private let keychain: KeychainStorageProtocol
     private let profileControllerFactory = ProfileControllerFactory()
+    private let photoInfoControllerFactory = PhotoInfoControllerFactory()
     
     init(
         finishDelegate: CoordinatorFinishDelegate? = nil,
@@ -35,8 +36,22 @@ final class ProfileFeedCoordinator: Coordinator {
 private extension ProfileFeedCoordinator {
     func showProfileScreen() {
         let vc = profileControllerFactory.makeWith(
-            tokenStorage: TokenCache(keychain: keychain)
+            tokenStorage: TokenCache(keychain: keychain),
+            output: self
         )
         navigation.setViewControllers([vc], animated: true)
+    }
+}
+
+extension ProfileFeedCoordinator: ImageCollectionControllerOutput {
+    func show(image: UIImage, data: PhotoItem) {
+        let vc = photoInfoControllerFactory.makeWith(
+            tokenStorage: TokenCache(keychain: keychain),
+            photoItem: data,
+            image: image
+        )
+        
+        navigation.pushViewController(vc, animated: true)
+        navigation.setNavigationBarHidden(false, animated: false)
     }
 }
