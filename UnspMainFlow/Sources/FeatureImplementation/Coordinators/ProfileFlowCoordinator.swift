@@ -1,5 +1,5 @@
 //
-//  ProfileFeedCoordinator.swift
+//  ProfileFlowCoordinator.swift
 //  UnspMainFlow
 //
 //  Created by Malik Timurkaev on 17.10.2025.
@@ -9,7 +9,7 @@ import UIKit
 import CoreKit
 import KeychainStorageKit
 
-final class ProfileFeedCoordinator: Coordinator {
+final class ProfileFlowCoordinator: Coordinator {
     
     weak var finishDelegate: CoordinatorFinishDelegate?
     
@@ -33,26 +33,40 @@ final class ProfileFeedCoordinator: Coordinator {
     }
 }
 
-private extension ProfileFeedCoordinator {
+private extension ProfileFlowCoordinator {
     func showProfileScreen() {
+        let vc = ProfileViewController(output: self)
+        navigation.setViewControllers([vc], animated: true)
+    }
+    
+    func showFavoriteImagesScreen() {
         let vc = profileControllerFactory.makeWith(
             tokenStorage: TokenCache(keychain: keychain),
             output: self
         )
-        navigation.setViewControllers([vc], animated: true)
+        push(vc)
+    }
+    
+    func push(_ vc: UIViewController) {
+        vc.hidesBottomBarWhenPushed = true
+        navigation.pushViewController(vc, animated: true)
+        navigation.setNavigationBarHidden(false, animated: false)
     }
 }
 
-extension ProfileFeedCoordinator: ImageCollectionControllerOutput {
-    func show(image: UIImage, data: PhotoItem) {
+extension ProfileFlowCoordinator: ImageCollectionControllerOutput {
+    func didSelect(image: UIImage, data: PhotoItem) {
         let vc = photoInfoControllerFactory.makeWith(
             tokenStorage: TokenCache(keychain: keychain),
             photoItem: data,
             image: image
         )
-        
-        vc.hidesBottomBarWhenPushed = true
-        navigation.pushViewController(vc, animated: true)
-        navigation.setNavigationBarHidden(false, animated: false)
+        push(vc)
+    }
+}
+
+extension ProfileFlowCoordinator: ProfileViewControllerOutput {
+    func didRequestGallery() {
+        showFavoriteImagesScreen()
     }
 }

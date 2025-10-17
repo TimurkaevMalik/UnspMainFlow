@@ -67,7 +67,9 @@ final class PhotosViewModel: PhotosViewModelProtocol {
                 
                 ///На стороне Unsplash баг с дупликатами
                 ///Использую костыль ниже
-                newPhotos.removeLast(3)
+                if newPhotos.count == 20 {
+                    newPhotos.removeLast(3)
+                }
                 
                 let photoItems: [PhotoItem] = makePhotoItems(newPhotos)
                 

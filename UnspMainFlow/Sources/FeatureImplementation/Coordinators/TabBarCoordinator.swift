@@ -57,7 +57,7 @@ private extension TabBarCoordinator {
         // MARK: - Profile tab
         let profileNav = UINavigationController()
         
-        let profileCoordinator = ProfileFeedCoordinator(
+        let profileCoordinator = ProfileFlowCoordinator(
             finishDelegate: self,
             navigation: profileNav,
             keychain: keychain

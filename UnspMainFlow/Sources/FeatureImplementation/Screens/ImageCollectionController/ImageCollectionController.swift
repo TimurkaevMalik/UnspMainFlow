@@ -11,7 +11,7 @@ import Combine
 
 @MainActor
 protocol ImageCollectionControllerOutput: AnyObject {
-    func show(image: UIImage, data: PhotoItem)
+    func didSelect(image: UIImage, data: PhotoItem)
 }
 
 // MARK: - Lifecycle
@@ -115,7 +115,7 @@ extension ImageCollectionController {
     ) {
         guard let image = vm.imageItem(at: indexPath.item).image else { return }
         let photoItem = vm.photoItem(at: indexPath.item)
-        output?.show(image: image, data: photoItem)
+        output?.didSelect(image: image, data: photoItem)
     }
 }
 
