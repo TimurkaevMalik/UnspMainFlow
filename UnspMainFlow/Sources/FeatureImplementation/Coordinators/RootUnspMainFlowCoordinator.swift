@@ -13,7 +13,7 @@ import HelpersSharedUnsp
 final class RootUnspMainFlowCoordinator: FlowCoordinator {
     
     var child: Coordinator?
-    var finishDelegate: CoordinatorFinishDelegate?
+    weak var finishDelegate: CoordinatorFinishDelegate?
     
     private let navigation: UINavigationController
     private let keychainFactory: KeychainStorageFactory
@@ -34,7 +34,7 @@ final class RootUnspMainFlowCoordinator: FlowCoordinator {
         
 #warning("Set makeAuthorizedKeychain()")
         if let keychain  {
-            child = PhotoFeedCoordinator(
+            child = TabBarCoordinator(
                 finishDelegate: self,
                 navigation: navigation,
                 keychain: keychain
