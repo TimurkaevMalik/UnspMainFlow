@@ -60,8 +60,9 @@ final class PhotosViewModel: PhotosViewModelProtocol {
         ))
         
         guard taskManager.get(for: taskKey) == nil else { return }
-
+        
         updatePhotosState(.loading)
+        currentPhotosPage += 1
         
         let task = Task {
             do {
@@ -71,7 +72,6 @@ final class PhotosViewModel: PhotosViewModelProtocol {
                 )
                 
                 try Task.checkCancellation()
-                currentPhotosPage += 1
                 
                 ///На стороне Unsplash баг с дупликатами
                 ///Использую костыль ниже
@@ -86,6 +86,7 @@ final class PhotosViewModel: PhotosViewModelProtocol {
                 photoEntries.append(contentsOf: data)
                 updatePhotosState(.loaded(photoItems))
             } catch {
+                currentPhotosPage -= 1
                 updatePhotosState(.failed(error))
             }
             taskManager.remove(for: taskKey)

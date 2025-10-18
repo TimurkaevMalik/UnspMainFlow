@@ -96,7 +96,7 @@ private extension PhotosSearchViewModel {
         guard taskManager.get(for: taskKey) == nil else { return }
         
         updatePhotosState(.loading)
-        
+        currentPage += 1
         
         let task = Task {
             do {
@@ -117,7 +117,6 @@ private extension PhotosSearchViewModel {
                 }
                 
                 try Task.checkCancellation()
-                currentPage += 1
                 
                 ///На стороне Unsplash баг с дупликатами
                 ///Использую костыль ниже
@@ -138,6 +137,7 @@ private extension PhotosSearchViewModel {
                 
                 updatePhotosState(.loaded(photoItems))
             } catch {
+                currentPage -= 1
                 updatePhotosState(.failed(error))
             }
             

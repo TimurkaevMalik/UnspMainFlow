@@ -20,8 +20,8 @@ final class SearchImageCollectionController: UICollectionViewController {
     private let vm: PhotosSearchViewModelProtocol
     private var cancellable = Set<AnyCancellable>()
     private lazy var dataSource = makeDataSource()
-    private var nextPageTriggerIndex = IndexPath(item: 0, section: 0)
-    private let paginationOffset = 10
+    private var nextPageTriggerIndex = 0
+    private let paginationOffset = 13
     
     init(
         output: ImageCollectionControllerOutput? = nil,
@@ -88,17 +88,11 @@ private extension SearchImageCollectionController {
         } else {
             applyAdditional(itemsIDs: photosData.map({ $0.id }))
         }
-        
-        nextPageTriggerIndex = IndexPath(
-            item: index + paginationOffset,
-            section: 0
-        )
+        print("first index", index)
+        nextPageTriggerIndex = index + paginationOffset
     }
     
     func updateSnapshot(itemsIDs: [String]) {
-       
-        print("came", itemsIDs)
-        print("update", dataSource.snapshot().itemIdentifiers)
         var snapshot = dataSource.snapshot()
         snapshot.reconfigureItems(itemsIDs)
         dataSource.apply(snapshot, animatingDifferences: true)
@@ -117,7 +111,7 @@ private extension SearchImageCollectionController {
         dataSource.apply(snapshot, animatingDifferences: true)
     }
     
-    func loadNextPageIfNeeded(at index: IndexPath) {
+    func loadNextPageIfNeeded(at index: Int) {
         guard index >= nextPageTriggerIndex else { return }
         let text = searchController.searchBar.text ?? ""
         vm.fetchPhotosData(query: text)
@@ -139,9 +133,16 @@ extension SearchImageCollectionController {
 // MARK: - UICollectionViewDelegate
 extension SearchImageCollectionController: UICollectionViewDataSourcePrefetching {
     func collectionView(_ collectionView: UICollectionView, prefetchItemsAt indexPaths: [IndexPath]) {
-        print(nextPageTriggerIndex.item, indexPaths.last!.item)
-        guard let indexPath = indexPaths.last else { return }
-        loadNextPageIfNeeded(at: indexPath)
+        
+        print(nextPageTriggerIndex, indexPaths.max()!.item)
+        print(indexPaths)
+        print("Total items:", dataSource.snapshot().itemIdentifiers.count)
+
+        print("contentSize:", collectionView.contentSize.height)
+        print("bounds:", collectionView.bounds.height)
+
+        guard let index = indexPaths.max()?.item else { return }
+        loadNextPageIfNeeded(at: index)
     }
 }
 
