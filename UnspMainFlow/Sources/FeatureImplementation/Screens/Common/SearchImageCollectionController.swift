@@ -12,12 +12,16 @@ import Combine
 // MARK: - Lifecycle
 final class SearchImageCollectionController: UICollectionViewController {
     
+    private lazy var searchController = {
+        UISearchController(searchResultsController: nil)
+    }()
+    
     private weak var output: ImageCollectionControllerOutput?
     private let vm: PhotosSearchViewModelProtocol
     private var cancellable = Set<AnyCancellable>()
     private lazy var dataSource = makeDataSource()
     private var nextPageTriggerIndex = IndexPath(item: 0, section: 0)
-    private let paginationOffset = 5
+    private let paginationOffset = 11
     
     init(
         output: ImageCollectionControllerOutput? = nil,
@@ -36,8 +40,9 @@ final class SearchImageCollectionController: UICollectionViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        configureSnapshot()
+        
         configureCollection()
+        configureSearchController()
         bindViewModel()
         vm.fetchPhotosData(query: "")
     }
@@ -76,29 +81,46 @@ private extension SearchImageCollectionController {
     }
     
     func handleLoaded(photosData: [PhotoItem]) {
-        apply(itemsIDs: photosData.map({ $0.id }))
+        guard let index = photosData.first?.index else { return }
+        
+        if index == 0 {
+            applyNew(itemsIDs: photosData.map({ $0.id }))
+        } else {
+            applyAdditional(itemsIDs: photosData.map({ $0.id }))
+        }
         
         nextPageTriggerIndex = IndexPath(
-            item: nextPageTriggerIndex.item + photosData.count - paginationOffset,
+            item: index + paginationOffset,
             section: 0
         )
     }
     
     func updateSnapshot(itemsIDs: [String]) {
+       
+        print("came", itemsIDs)
+        print("update", dataSource.snapshot().itemIdentifiers)
         var snapshot = dataSource.snapshot()
         snapshot.reconfigureItems(itemsIDs)
         dataSource.apply(snapshot, animatingDifferences: true)
     }
     
-    func apply(itemsIDs: [String]) {
+    func applyAdditional(itemsIDs: [String]) {
         var snapshot = dataSource.snapshot()
+        snapshot.appendItems(itemsIDs, toSection: .main)
+        dataSource.apply(snapshot, animatingDifferences: true)
+    }
+    
+    func applyNew(itemsIDs: [String]) {
+        var snapshot = Snapshot()
+        snapshot.appendSections([.main])
         snapshot.appendItems(itemsIDs, toSection: .main)
         dataSource.apply(snapshot, animatingDifferences: true)
     }
     
     func loadNextPageIfNeeded(at index: IndexPath) {
         guard index >= nextPageTriggerIndex else { return }
-        vm.fetchPhotosData(query: "")
+        let text = searchController.searchBar.text ?? ""
+        vm.fetchPhotosData(query: text)
     }
 }
 
@@ -117,14 +139,25 @@ extension SearchImageCollectionController {
 // MARK: - UICollectionViewDelegate
 extension SearchImageCollectionController: UICollectionViewDataSourcePrefetching {
     func collectionView(_ collectionView: UICollectionView, prefetchItemsAt indexPaths: [IndexPath]) {
+        print(nextPageTriggerIndex.item, indexPaths.last!.item)
         guard let indexPath = indexPaths.last else { return }
         loadNextPageIfNeeded(at: indexPath)
     }
 }
 
-//MARK: - Configuration
+//MARK: - UISearchResultsUpdating
+extension SearchImageCollectionController: UISearchResultsUpdating {
+    func updateSearchResults(for searchController: UISearchController) {
+        let text = searchController.searchBar.text ?? ""
+        vm.fetchPhotosData(query: text)
+    }
+}
+
+
+//MARK: - Collection configuration
 private extension SearchImageCollectionController {
     func configureCollection() {
+        configureSnapshot()
         collectionView.backgroundColor = Palette.Asset.whitePrimary.uiColor
         collectionView.dataSource = dataSource
         collectionView.prefetchDataSource = self
@@ -155,8 +188,17 @@ private extension SearchImageCollectionController {
     }
 }
 
+//MARK: - SearchController configuration
+private extension SearchImageCollectionController {
+    func configureSearchController() {
+        searchController.searchResultsUpdater = self
+        navigationItem.searchController = searchController
+    }
+}
+
 // MARK: - Typealias & Section
 extension SearchImageCollectionController: DiffableCollectionControllerProtocol {
+    
     typealias Section = CustomSection
     typealias Cell = ImageCollectionCell
     typealias ItemIdentifier = ImageItem.ID

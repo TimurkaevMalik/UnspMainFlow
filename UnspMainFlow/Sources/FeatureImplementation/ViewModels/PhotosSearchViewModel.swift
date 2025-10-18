@@ -73,8 +73,10 @@ final class PhotosSearchViewModel: PhotosSearchViewModelProtocol {
     
     func fetchPhotosData(query: String) {
         if query.isEmpty {
+            updateMode(.regular)
             fetchFromPhotoDataRepo()
         } else {
+            updateMode(.searching)
             fetchFromSearchPhotoDataRepo(query: query)
         }
     }
@@ -104,13 +106,12 @@ final class PhotosSearchViewModel: PhotosSearchViewModelProtocol {
 // MARK: - Remote methods
 private extension PhotosSearchViewModel {
     func fetchFromPhotoDataRepo() {
-        currentSearchedPhotosPage = 0
-        guard defaultPhotosPageTasks[currentDefaultPhotosPage + 1] == nil else { return
-        }
+        let pageKey = currentDefaultPhotosPage + 1
+        
+        guard defaultPhotosPageTasks[pageKey] == nil else { return }
         
         updatePhotosState(.loading)
         currentDefaultPhotosPage += 1
-        let pageKey = currentDefaultPhotosPage
         
         let task = Task {
             do {
@@ -121,7 +122,9 @@ private extension PhotosSearchViewModel {
                 
                 ///На стороне Unsplash баг с дупликатами
                 ///Использую костыль ниже
-                newPhotos.removeLast(3)
+                if newPhotos.count == 20 {
+                    newPhotos.removeLast(3)
+                }
                 
                 let photoItems: [PhotoItem] = makePhotoItems(newPhotos)
                 
@@ -142,13 +145,12 @@ private extension PhotosSearchViewModel {
     }
     
     func fetchFromSearchPhotoDataRepo(query: String) {
-        currentDefaultPhotosPage = 0
-        guard searchedPhotosPageTasks[currentSearchedPhotosPage + 1] == nil else { return
-        }
+        let pageKey = currentSearchedPhotosPage + 1
+        
+        guard searchedPhotosPageTasks[pageKey] == nil else { return }
         
         updatePhotosState(.loading)
         currentSearchedPhotosPage += 1
-        let pageKey = currentSearchedPhotosPage
         
         let task = Task {
             do {
@@ -158,7 +160,9 @@ private extension PhotosSearchViewModel {
                     query: query
                 )
                 
-                newPhotos.removeLast(3)
+                if newPhotos.count == 20 {
+                    newPhotos.removeLast(3)
+                }
                 
                 let photoItems: [PhotoItem] = makePhotoItems(newPhotos)
                 
@@ -229,5 +233,19 @@ private extension PhotosSearchViewModel {
     
     func updateMode(_ mode: Mode) {
         self.mode = mode
+        
+        switch mode {
+            
+        case .regular:
+            searchedPhotoEntries = []
+            currentSearchedPhotosPage = 0
+            searchedPhotosPageTasks.forEach({ $0.value.cancel() })
+            searchedPhotosPageTasks.removeAll()
+        case .searching:
+            defaultPhotoEntries = []
+            currentDefaultPhotosPage = 0
+            defaultPhotosPageTasks.forEach({ $0.value.cancel() })
+            defaultPhotosPageTasks.removeAll()
+        }
     }
 }
