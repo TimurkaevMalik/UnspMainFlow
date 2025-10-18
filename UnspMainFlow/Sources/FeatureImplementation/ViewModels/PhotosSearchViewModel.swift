@@ -38,8 +38,7 @@ final class PhotosSearchViewModel: PhotosSearchViewModelProtocol {
     }
     
     // MARK: - Tasks
-    private var imageItemTasks: [Int: Task<(), Never>] = [:]
-    private var photoPageTasks: [Int: Task<(), Never>] = [:]
+    private var tasks: [TaskKey: Task<(), Never>] = [:]
     
     // MARK: - Pagination
     private var currentPage = 0
@@ -93,11 +92,12 @@ final class PhotosSearchViewModel: PhotosSearchViewModelProtocol {
 private extension PhotosSearchViewModel {
     func fetch(from source: Source) {
         let pageKey = currentPage + 1
+        let taskKey = TaskKey(group: .photoData, identifier: pageKey)
         
-        guard photoPageTasks[pageKey] == nil else { return }
+        guard tasks[taskKey] == nil else { return }
         
         updatePhotosState(.loading)
-        currentPage += 1
+        
         
         let task = Task {
             do {
@@ -116,6 +116,9 @@ private extension PhotosSearchViewModel {
                         query: query
                     )
                 }
+                
+                try Task.checkCancellation()
+                currentPage += 1
                 
                 ///На стороне Unsplash баг с дупликатами
                 ///Использую костыль ниже
@@ -139,18 +142,20 @@ private extension PhotosSearchViewModel {
                 updatePhotosState(.failed(error))
             }
             
-            photoPageTasks.removeValue(forKey: pageKey)
+            tasks.removeValue(forKey: taskKey)
         }
         
-        photoPageTasks[pageKey] = task
+        tasks[taskKey] = task
     }
     
     func fetchImage(at index: Int) {
-        guard imageItemTasks[index] == nil,
-              photoEntries[index].item.image == nil,
-              photoEntries.count > index
-        else { return }
+        let taskKey = TaskKey(group: .imageItem, identifier: index)
         
+        guard tasks[taskKey] == nil,
+              photoEntries.count > index,
+              photoEntries[index].item.image == nil
+        else { return }
+                
         let url = photoEntries[index].data.urls.small
         
         let task = Task {
@@ -168,10 +173,9 @@ private extension PhotosSearchViewModel {
                 print(error)
             }
             
-            imageItemTasks.removeValue(forKey: index)
+            tasks.removeValue(forKey: taskKey)
         }
-        
-        imageItemTasks[index] = task
+        tasks[taskKey] = task
     }
 }
 
@@ -199,8 +203,7 @@ private extension PhotosSearchViewModel {
         
         currentSource = source
         currentPage = 0
-        photoPageTasks.forEach({ $0.value.cancel() })
-        photoPageTasks.removeAll()
+        tasks.forEach({ $0.value.cancel() })
         
         switch source {
         case .feed:
@@ -212,6 +215,16 @@ private extension PhotosSearchViewModel {
 }
 
 private extension PhotosSearchViewModel {
+    struct TaskKey: Hashable {
+        let group: TaskGroup
+        let identifier: Int
+    }
+    
+    enum TaskGroup {
+        case photoData
+        case imageItem
+    }
+    
     enum Source: Equatable {
         case feed
         case search(query: String = "")
