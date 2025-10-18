@@ -8,18 +8,9 @@
 import Foundation
 import Combine
 
-@MainActor
-protocol PhotosSearchViewModelProtocol {
+protocol PhotosSearchViewModelProtocol: PhotosViewModelProtocol {
     typealias PhotosState = PhotoDataServiceState
-    
-    var photosState: PassthroughSubject<PhotosState, Never> { get }
-    var imagePublisher: PassthroughSubject<ImageItem, Never> { get }
-    
     func fetchPhotosData(query: String)
-    func fetchImages(for indexes: [Int])
-    
-    func imageItem(at index: Int) -> ImageItem
-    func photoItem(at index: Int) -> PhotoItem
 }
 
 final class PhotosSearchViewModel: PhotosSearchViewModelProtocol {
@@ -37,17 +28,16 @@ final class PhotosSearchViewModel: PhotosSearchViewModelProtocol {
         currentSource == .feed ? feedPhotoEntries : searchedPhotoEntries
     }
     
-    // MARK: - Tasks
-    private var tasks: [TaskKey: Task<(), Never>] = [:]
-    
     // MARK: - Pagination
     private var currentPage = 0
     
     // MARK: - Services
+    private let taskManager = GropedTasksManager<TaskGroup, Int>()
+    private let dateFormatter = DisplayDateFormatter()
+    
     private let photoDataRepo: PhotoDataRepositoryProtocol
     private let photoSearchRepo: PhotosSearchRepositoryProtocol
     private let imagesRepo: ImagesRepositoryProtocol
-    private let dateFormatter = DisplayDateFormatter()
     
     // MARK: - Init
     init(
@@ -58,6 +48,12 @@ final class PhotosSearchViewModel: PhotosSearchViewModelProtocol {
         self.photoDataRepo = photoDataRepo
         self.photoSearchRepo = photoSearchRepo
         self.imagesRepo = imagesRepo
+    }
+    
+    func fetchPhotosData() {
+        let source: Source = .feed
+        updateSourceIfNeeded(source)
+        fetch(from: source)
     }
     
     func fetchPhotosData(query: String) {
@@ -92,9 +88,12 @@ final class PhotosSearchViewModel: PhotosSearchViewModelProtocol {
 private extension PhotosSearchViewModel {
     func fetch(from source: Source) {
         let pageKey = currentPage + 1
-        let taskKey = TaskKey(group: .photoData, identifier: pageKey)
+        let taskKey = taskManager.makeKey(.init(
+            group: .photoData,
+            taskID: pageKey
+        ))
         
-        guard tasks[taskKey] == nil else { return }
+        guard taskManager.get(for: taskKey) == nil else { return }
         
         updatePhotosState(.loading)
         
@@ -142,16 +141,19 @@ private extension PhotosSearchViewModel {
                 updatePhotosState(.failed(error))
             }
             
-            tasks.removeValue(forKey: taskKey)
+            taskManager.remove(for: taskKey)
         }
         
-        tasks[taskKey] = task
+        taskManager.set(task: task, for: taskKey)
     }
     
     func fetchImage(at index: Int) {
-        let taskKey = TaskKey(group: .imageItem, identifier: index)
+        let taskKey = taskManager.makeKey(.init(
+            group: .imageItem,
+            taskID: index
+        ))
         
-        guard tasks[taskKey] == nil,
+        guard taskManager.get(for: taskKey) == nil,
               photoEntries.count > index,
               photoEntries[index].item.image == nil
         else { return }
@@ -173,9 +175,10 @@ private extension PhotosSearchViewModel {
                 print(error)
             }
             
-            tasks.removeValue(forKey: taskKey)
+            taskManager.remove(for: taskKey)
         }
-        tasks[taskKey] = task
+        
+        taskManager.set(task: task, for: taskKey)
     }
 }
 
@@ -203,7 +206,7 @@ private extension PhotosSearchViewModel {
         
         currentSource = source
         currentPage = 0
-        tasks.forEach({ $0.value.cancel() })
+        taskManager.removeAll()
         
         switch source {
         case .feed:
@@ -215,11 +218,6 @@ private extension PhotosSearchViewModel {
 }
 
 private extension PhotosSearchViewModel {
-    struct TaskKey: Hashable {
-        let group: TaskGroup
-        let identifier: Int
-    }
-    
     enum TaskGroup {
         case photoData
         case imageItem

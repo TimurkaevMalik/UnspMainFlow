@@ -11,13 +11,13 @@ import Combine
 
 final class PhotoFeedController: UIViewController {
     
-    private let photoFeedCollectionController: ImageCollectionController
+    private let photoFeedCollectionController: UICollectionViewController
     
     private lazy var rootView = {
         PhotoFeedView(photosCollectionView: photoFeedCollectionController.collectionView)
     }()
     
-    init(photoFeedCollectionController: ImageCollectionController) {
+    init(photoFeedCollectionController: UICollectionViewController) {
         self.photoFeedCollectionController = photoFeedCollectionController
         super.init(nibName: nil, bundle: nil)
     }

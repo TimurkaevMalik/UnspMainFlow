@@ -21,7 +21,7 @@ final class SearchImageCollectionController: UICollectionViewController {
     private var cancellable = Set<AnyCancellable>()
     private lazy var dataSource = makeDataSource()
     private var nextPageTriggerIndex = IndexPath(item: 0, section: 0)
-    private let paginationOffset = 11
+    private let paginationOffset = 10
     
     init(
         output: ImageCollectionControllerOutput? = nil,
@@ -44,7 +44,7 @@ final class SearchImageCollectionController: UICollectionViewController {
         configureCollection()
         configureSearchController()
         bindViewModel()
-        vm.fetchPhotosData(query: "")
+        vm.fetchPhotosData()
     }
 }
 

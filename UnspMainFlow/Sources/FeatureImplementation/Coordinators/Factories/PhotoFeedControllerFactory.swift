@@ -54,7 +54,7 @@ final class PhotoFeedControllerFactory {
         imageCollectionController.title = "Remove title"
         
         #warning("remove")
-//        return PhotoFeedController(photoFeedCollectionController: imageCollectionController)
-        return imageCollectionController
+        return PhotoFeedController(photoFeedCollectionController: imageCollectionController)
+//        return imageCollectionController
     }
 }
