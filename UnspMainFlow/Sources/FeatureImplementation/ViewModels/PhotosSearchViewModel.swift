@@ -10,9 +10,9 @@ import Combine
 
 @MainActor
 protocol PhotosSearchViewModelProtocol {
-    typealias State = PhotoDataServiceState
+    typealias PhotosState = PhotoDataServiceState
     
-    var photosState: PassthroughSubject<State, Never> { get }
+    var photosState: PassthroughSubject<PhotosState, Never> { get }
     var imagePublisher: PassthroughSubject<ImageItem, Never> { get }
     
     func fetchPhotosData(query: String)
@@ -23,36 +23,26 @@ protocol PhotosSearchViewModelProtocol {
 }
 
 final class PhotosSearchViewModel: PhotosSearchViewModelProtocol {
-    enum Mode {
-        case regular
-        case searching
-    }
     
-    private var mode: Mode = .regular
+    private var currentSource: Source = .feed
     
     // MARK: - Subjects
-    let photosState: PassthroughSubject<State, Never> = .init()
+    let photosState: PassthroughSubject<PhotosState, Never> = .init()
     let imagePublisher: PassthroughSubject<ImageItem, Never> = .init()
     
     // MARK: - Entries
-    private var photoEntries: [(data: Photo, item: ImageItem)] {
-        if mode == .regular {
-            defaultPhotoEntries
-        } else {
-            searchedPhotoEntries
-        }
-    }
-    private var defaultPhotoEntries: [(data: Photo, item: ImageItem)] = []
+    private var feedPhotoEntries: [(data: Photo, item: ImageItem)] = []
     private var searchedPhotoEntries: [(data: Photo, item: ImageItem)] = []
+    private var photoEntries: [(data: Photo, item: ImageItem)] {
+        currentSource == .feed ? feedPhotoEntries : searchedPhotoEntries
+    }
     
     // MARK: - Tasks
     private var imageItemTasks: [Int: Task<(), Never>] = [:]
-    private var defaultPhotosPageTasks: [Int: Task<(), Never>] = [:]
-    private var searchedPhotosPageTasks: [Int: Task<(), Never>] = [:]
+    private var photoPageTasks: [Int: Task<(), Never>] = [:]
     
     // MARK: - Pagination
-    private var currentDefaultPhotosPage = 0
-    private var currentSearchedPhotosPage = 0
+    private var currentPage = 0
     
     // MARK: - Services
     private let photoDataRepo: PhotoDataRepositoryProtocol
@@ -72,13 +62,9 @@ final class PhotosSearchViewModel: PhotosSearchViewModelProtocol {
     }
     
     func fetchPhotosData(query: String) {
-        if query.isEmpty {
-            updateMode(.regular)
-            fetchFromPhotoDataRepo()
-        } else {
-            updateMode(.searching)
-            fetchFromSearchPhotoDataRepo(query: query)
-        }
+        let source: Source = query.isEmpty ? .feed : .search(query: query)
+        updateSourceIfNeeded(source)
+        fetch(from: source)
     }
     
     func fetchImages(for indexes: [Int]) {
@@ -105,81 +91,58 @@ final class PhotosSearchViewModel: PhotosSearchViewModelProtocol {
 
 // MARK: - Remote methods
 private extension PhotosSearchViewModel {
-    func fetchFromPhotoDataRepo() {
-        let pageKey = currentDefaultPhotosPage + 1
+    func fetch(from source: Source) {
+        let pageKey = currentPage + 1
         
-        guard defaultPhotosPageTasks[pageKey] == nil else { return }
+        guard photoPageTasks[pageKey] == nil else { return }
         
         updatePhotosState(.loading)
-        currentDefaultPhotosPage += 1
+        currentPage += 1
         
         let task = Task {
             do {
-                var newPhotos = try await photoDataRepo.fetch(
-                    page: currentDefaultPhotosPage,
-                    size: 20
-                )
+                let newPhotos: [Photo]
+                
+                switch source {
+                case .feed:
+                    newPhotos = try await photoDataRepo.fetch(
+                        page: currentPage,
+                        size: 20
+                    )
+                case .search(let query):
+                    newPhotos = try await photoSearchRepo.fetch(
+                        page: currentPage,
+                        size: 20,
+                        query: query
+                    )
+                }
                 
                 ///На стороне Unsplash баг с дупликатами
                 ///Использую костыль ниже
-                if newPhotos.count == 20 {
-                    newPhotos.removeLast(3)
-                }
+                let cleanPhotos = Array(newPhotos.prefix(17))
                 
-                let photoItems: [PhotoItem] = makePhotoItems(newPhotos)
+                let photoItems: [PhotoItem] = makePhotoItems(cleanPhotos)
                 
-                let data: [(data: Photo, item: ImageItem)] = zip(newPhotos, photoItems).map({
+                let data: [(data: Photo, item: ImageItem)] = zip(cleanPhotos, photoItems).map({
                     ($0, ImageItem(id: $1.id))
                 })
                 
-                defaultPhotoEntries.append(contentsOf: data)
+                switch source {
+                case .feed:
+                    feedPhotoEntries.append(contentsOf: data)
+                case .search:
+                    searchedPhotoEntries.append(contentsOf: data)
+                }
+                
                 updatePhotosState(.loaded(photoItems))
             } catch {
                 updatePhotosState(.failed(error))
             }
             
-            defaultPhotosPageTasks.removeValue(forKey: pageKey)
+            photoPageTasks.removeValue(forKey: pageKey)
         }
         
-        defaultPhotosPageTasks[pageKey] = task
-    }
-    
-    func fetchFromSearchPhotoDataRepo(query: String) {
-        let pageKey = currentSearchedPhotosPage + 1
-        
-        guard searchedPhotosPageTasks[pageKey] == nil else { return }
-        
-        updatePhotosState(.loading)
-        currentSearchedPhotosPage += 1
-        
-        let task = Task {
-            do {
-                var newPhotos = try await photoSearchRepo.fetch(
-                    page: currentSearchedPhotosPage,
-                    size: 20,
-                    query: query
-                )
-                
-                if newPhotos.count == 20 {
-                    newPhotos.removeLast(3)
-                }
-                
-                let photoItems: [PhotoItem] = makePhotoItems(newPhotos)
-                
-                let data: [(data: Photo, item: ImageItem)] = zip(newPhotos, photoItems).map({
-                    ($0, ImageItem(id: $1.id))
-                })
-                
-                searchedPhotoEntries.append(contentsOf: data)
-                updatePhotosState(.loaded(photoItems))
-            } catch {
-                updatePhotosState(.failed(error))
-            }
-            
-            searchedPhotosPageTasks.removeValue(forKey: pageKey)
-        }
-        
-        searchedPhotosPageTasks[pageKey] = task
+        photoPageTasks[pageKey] = task
     }
     
     func fetchImage(at index: Int) {
@@ -194,8 +157,8 @@ private extension PhotosSearchViewModel {
             do {
                 let image = try await imagesRepo.fetchImage(with: url)
                 
-                if mode == .regular {
-                    defaultPhotoEntries[index].item.image = image
+                if currentSource == .feed {
+                    feedPhotoEntries[index].item.image = image
                 } else {
                     searchedPhotoEntries[index].item.image = image
                 }
@@ -227,25 +190,39 @@ private extension PhotosSearchViewModel {
         })
     }
     
-    func updatePhotosState(_ state: State) {
+    func updatePhotosState(_ state: PhotosState) {
         photosState.send(state)
     }
     
-    func updateMode(_ mode: Mode) {
-        self.mode = mode
+    func updateSourceIfNeeded(_ source: Source) {
+        guard currentSource != source else { return }
         
-        switch mode {
-            
-        case .regular:
+        currentSource = source
+        currentPage = 0
+        photoPageTasks.forEach({ $0.value.cancel() })
+        photoPageTasks.removeAll()
+        
+        switch source {
+        case .feed:
             searchedPhotoEntries = []
-            currentSearchedPhotosPage = 0
-            searchedPhotosPageTasks.forEach({ $0.value.cancel() })
-            searchedPhotosPageTasks.removeAll()
-        case .searching:
-            defaultPhotoEntries = []
-            currentDefaultPhotosPage = 0
-            defaultPhotosPageTasks.forEach({ $0.value.cancel() })
-            defaultPhotosPageTasks.removeAll()
+        case .search:
+            feedPhotoEntries = []
+        }
+    }
+}
+
+private extension PhotosSearchViewModel {
+    enum Source: Equatable {
+        case feed
+        case search(query: String = "")
+        
+        static func == (lhs: Self, rhs: Self) -> Bool {
+            switch (lhs, rhs) {
+                
+            case (.feed, .feed): true
+            case (.search, .search): true
+            default: false
+            }
         }
     }
 }
