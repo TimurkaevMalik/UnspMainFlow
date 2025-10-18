@@ -30,9 +30,11 @@ final class PhotosSearchViewModel: PhotosSearchViewModelProtocol {
     
     private var mode: Mode = .regular
     
+    // MARK: - Subjects
     let photosState: PassthroughSubject<State, Never> = .init()
     let imagePublisher: PassthroughSubject<ImageItem, Never> = .init()
-
+    
+    // MARK: - Entries
     private var photoEntries: [(data: Photo, item: ImageItem)] {
         if mode == .regular {
             defaultPhotoEntries
@@ -40,22 +42,25 @@ final class PhotosSearchViewModel: PhotosSearchViewModelProtocol {
             searchedPhotoEntries
         }
     }
-    
     private var defaultPhotoEntries: [(data: Photo, item: ImageItem)] = []
     private var searchedPhotoEntries: [(data: Photo, item: ImageItem)] = []
     
+    // MARK: - Tasks
     private var imageItemTasks: [Int: Task<(), Never>] = [:]
     private var defaultPhotosPageTasks: [Int: Task<(), Never>] = [:]
     private var searchedPhotosPageTasks: [Int: Task<(), Never>] = [:]
     
+    // MARK: - Pagination
     private var currentDefaultPhotosPage = 0
     private var currentSearchedPhotosPage = 0
-        
+    
+    // MARK: - Services
     private let photoDataRepo: PhotoDataRepositoryProtocol
     private let photoSearchRepo: PhotosSearchRepositoryProtocol
     private let imagesRepo: ImagesRepositoryProtocol
     private let dateFormatter = DisplayDateFormatter()
     
+    // MARK: - Init
     init(
         photoDataRepo: PhotoDataRepositoryProtocol,
         photoSearchRepo: PhotosSearchRepositoryProtocol,
@@ -85,16 +90,18 @@ final class PhotosSearchViewModel: PhotosSearchViewModelProtocol {
     func photoItem(at index: Int) -> PhotoItem {
         let photoData = photoEntries[index]
         
-        return PhotoItem(id: photoData.item.id,
-                         index: index,
-                         likes: photoData.data.likes,
-                         likedByUser: photoData.data.likedByUser,
-                         createdAt: dateFormatter.string(from: photoData.data.createdAt),
-                         description: photoData.data.description
+        return PhotoItem(
+            id: photoData.item.id,
+            index: index,
+            likes: photoData.data.likes,
+            likedByUser: photoData.data.likedByUser,
+            createdAt: dateFormatter.string(from: photoData.data.createdAt),
+            description: photoData.data.description
         )
     }
 }
 
+// MARK: - Remote methods
 private extension PhotosSearchViewModel {
     func fetchFromPhotoDataRepo() {
         currentSearchedPhotosPage = 0
@@ -170,9 +177,7 @@ private extension PhotosSearchViewModel {
         
         searchedPhotosPageTasks[pageKey] = task
     }
-}
-
-private extension PhotosSearchViewModel {
+    
     func fetchImage(at index: Int) {
         guard imageItemTasks[index] == nil,
               photoEntries[index].item.image == nil,
@@ -201,7 +206,10 @@ private extension PhotosSearchViewModel {
         
         imageItemTasks[index] = task
     }
-    
+}
+
+// MARK: - Local methods
+private extension PhotosSearchViewModel {
     func makePhotoItems(_ photos: [Photo]) -> [PhotoItem] {
         photos.enumerated().map({ index, element in
             PhotoItem(
@@ -217,5 +225,9 @@ private extension PhotosSearchViewModel {
     
     func updatePhotosState(_ state: State) {
         photosState.send(state)
+    }
+    
+    func updateMode(_ mode: Mode) {
+        self.mode = mode
     }
 }
