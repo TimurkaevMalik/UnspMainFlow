@@ -8,7 +8,6 @@
 import UIKit
 import SnapKit
 import CoreKit
-import KeychainStorageKit
 
 final class ProfileView: UIView {
     

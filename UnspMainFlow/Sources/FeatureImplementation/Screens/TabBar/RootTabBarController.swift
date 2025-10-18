@@ -9,16 +9,15 @@ import UIKit
 import CoreKit
 
 final class RootTabBarController: UITabBarController {
-    
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = "TabBar"
-        setupAppearance()
+        setupUI()
     }
 }
 
 private extension RootTabBarController {
-    func setupAppearance() {
+    func setupUI() {
+        title = "TabBar"
         tabBar.tintColor = Palette.Asset.blackPrimary.uiColor
         tabBar.backgroundColor = Palette.Asset.whitePrimary.uiColor
     }

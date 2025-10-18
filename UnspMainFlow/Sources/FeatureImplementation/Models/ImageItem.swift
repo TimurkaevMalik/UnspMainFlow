@@ -5,7 +5,6 @@
 //  Created by Malik Timurkaev on 14.10.2025.
 //
 
-import Foundation
 import UIKit
 
 ///Model for Presentation layer

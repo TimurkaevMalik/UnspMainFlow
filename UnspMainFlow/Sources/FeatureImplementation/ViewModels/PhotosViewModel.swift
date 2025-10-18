@@ -5,7 +5,7 @@
 //  Created by Malik Timurkaev on 07.10.2025.
 //
 
-import UIKit
+import Foundation
 import Combine
 
 @MainActor
