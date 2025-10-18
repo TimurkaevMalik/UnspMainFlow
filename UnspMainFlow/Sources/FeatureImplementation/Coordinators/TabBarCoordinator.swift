@@ -10,11 +10,11 @@ import CoreKit
 import KeychainStorageKit
 
 @MainActor
-protocol TabBarCoordinatorProtocol {
+protocol TabBarCoordinatorProtocol: CompositionCoordinator {
     var tabBarController: UITabBarController { get }
 }
 
-final class TabBarCoordinator: TabBarCoordinatorProtocol, CompositionCoordinator {
+final class TabBarCoordinator: TabBarCoordinatorProtocol {
     
     let tabBarController: UITabBarController = RootTabBarController()
     var children: [Coordinator] = []

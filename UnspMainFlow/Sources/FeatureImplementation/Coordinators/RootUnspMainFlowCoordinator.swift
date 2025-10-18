@@ -16,7 +16,6 @@ public final class RootUnspMainFlowCoordinator: FlowCoordinator {
     public weak var finishDelegate: CoordinatorFinishDelegate?
     
     private let window: UIWindow
-    private let keychainFactory = KeychainStorageFactory()
     
     public init(
         finishDelegate: CoordinatorFinishDelegate? = nil,
@@ -54,7 +53,7 @@ public final class RootUnspMainFlowCoordinator: FlowCoordinator {
 private extension RootUnspMainFlowCoordinator {
     func makeAuthorizedKeychain() -> KeychainStorageProtocol? {
         
-        if let keychain = keychainFactory.make(),
+        if let keychain =  KeychainStorageFactory().make(),
            let token = try? keychain.string(forKey: StorageKeys.accessToken.rawValue),
            !token.isEmpty {
             

@@ -49,14 +49,13 @@ private extension ImageCollectionController {
         vm.photosState
             .receive(on: DispatchQueue.main)
             .sink { [weak self] state in
-                guard let self else { return }
                 
                 switch state {
                 case .loading:
                     print("Loading")
                     
                 case .loaded(let photosData):
-                    handleLoaded(photosData: photosData)
+                    self?.handleLoaded(photosData: photosData)
                 case .failed(let error):
                     print(error)
                 }
@@ -69,8 +68,8 @@ private extension ImageCollectionController {
             .map({ item in
                 item.map({ $0.id })
             })
-            .sink { IDs in
-                self.updateSnapshot(itemsIDs: IDs)
+            .sink { [weak self] IDs in
+                self?.updateSnapshot(itemsIDs: IDs)
             }
             .store(in: &cancellable)
     }
@@ -145,7 +144,9 @@ private extension ImageCollectionController {
     }
     
     func makeCellRegistration() -> CellRegistration {
-        CellRegistration { cell, indexPath, id in
+        CellRegistration { [weak self] cell, indexPath, id in
+            guard let self else { return }
+            
             if let image = self.vm.imageItem(at: indexPath.item).image {
                 cell.set(image: image)
             } else {

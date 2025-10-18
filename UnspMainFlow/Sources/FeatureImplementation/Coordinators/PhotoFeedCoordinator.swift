@@ -15,8 +15,6 @@ final class PhotoFeedCoordinator: Coordinator {
     
     private let navigation: UINavigationController
     private let keychain: KeychainStorageProtocol
-    private let photoFeedFactory = PhotoFeedControllerFactory()
-    private let photoInfoControllerFactory = PhotoInfoControllerFactory()
     
     init(
         finishDelegate: CoordinatorFinishDelegate? = nil,
@@ -35,7 +33,7 @@ final class PhotoFeedCoordinator: Coordinator {
 
 private extension PhotoFeedCoordinator {
     func showPhotoFeedScreen() {
-        let vc = photoFeedFactory.makeWith(
+        let vc = PhotoFeedControllerFactory().makeWith(
             tokenStorage: TokenCache(keychain: keychain),
             output: self
         )
@@ -45,7 +43,7 @@ private extension PhotoFeedCoordinator {
 
 extension PhotoFeedCoordinator: ImageCollectionControllerOutput {
     func didSelect(image: UIImage, data: PhotoItem) {
-        let vc = photoInfoControllerFactory.makeWith(
+        let vc = PhotoInfoControllerFactory().makeWith(
             tokenStorage: TokenCache(keychain: keychain),
             photoItem: data,
             image: image

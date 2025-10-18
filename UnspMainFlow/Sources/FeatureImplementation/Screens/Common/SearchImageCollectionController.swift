@@ -54,14 +54,14 @@ private extension SearchImageCollectionController {
         vm.photosState
             .receive(on: DispatchQueue.main)
             .sink { [weak self] state in
-                guard let self else { return }
                 
                 switch state {
                 case .loading:
                     print("Loading")
                     
                 case .loaded(let photosData):
-                    handleLoaded(photosData: photosData)
+                    self?.handleLoaded(photosData: photosData)
+                    
                 case .failed(let error):
                     print(error)
                 }
@@ -74,8 +74,8 @@ private extension SearchImageCollectionController {
             .map({ item in
                 item.map({ $0.id })
             })
-            .sink { IDs in
-                self.updateSnapshot(itemsIDs: IDs)
+            .sink { [weak self] IDs in
+                self?.updateSnapshot(itemsIDs: IDs)
             }
             .store(in: &cancellable)
     }
@@ -153,9 +153,13 @@ extension SearchImageCollectionController: UISearchResultsUpdating {
     }
 }
 
-
-//MARK: - Collection configuration
+//MARK: - Configuration
 private extension SearchImageCollectionController {
+    func configureSearchController() {
+        searchController.searchResultsUpdater = self
+        navigationItem.searchController = searchController
+    }
+    
     func configureCollection() {
         configureSnapshot()
         collectionView.backgroundColor = Palette.Asset.whitePrimary.uiColor
@@ -178,21 +182,15 @@ private extension SearchImageCollectionController {
     }
     
     func makeCellRegistration() -> CellRegistration {
-        CellRegistration { cell, indexPath, id in
+        CellRegistration { [weak self] cell, indexPath, id in
+            guard let self else { return }
+            
             if let image = self.vm.imageItem(at: indexPath.item).image {
                 cell.set(image: image)
             } else {
                 self.vm.fetchImages(for: [indexPath.item])
             }
         }
-    }
-}
-
-//MARK: - SearchController configuration
-private extension SearchImageCollectionController {
-    func configureSearchController() {
-        searchController.searchResultsUpdater = self
-        navigationItem.searchController = searchController
     }
 }
 

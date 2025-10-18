@@ -15,8 +15,6 @@ final class ProfileFlowCoordinator: Coordinator {
     
     private let navigation: UINavigationController
     private let keychain: KeychainStorageProtocol
-    private let profileControllerFactory = ProfileControllerFactory()
-    private let photoInfoControllerFactory = PhotoInfoControllerFactory()
     
     init(
         finishDelegate: CoordinatorFinishDelegate? = nil,
@@ -40,7 +38,7 @@ private extension ProfileFlowCoordinator {
     }
     
     func showFavoriteImagesScreen() {
-        let vc = profileControllerFactory.makeWith(
+        let vc = ProfileControllerFactory().makeWith(
             tokenStorage: TokenCache(keychain: keychain),
             output: self
         )
@@ -56,7 +54,7 @@ private extension ProfileFlowCoordinator {
 
 extension ProfileFlowCoordinator: ImageCollectionControllerOutput {
     func didSelect(image: UIImage, data: PhotoItem) {
-        let vc = photoInfoControllerFactory.makeWith(
+        let vc = PhotoInfoControllerFactory().makeWith(
             tokenStorage: TokenCache(keychain: keychain),
             photoItem: data,
             image: image
