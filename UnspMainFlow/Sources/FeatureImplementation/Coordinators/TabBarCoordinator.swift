@@ -77,7 +77,7 @@ private extension TabBarCoordinator {
 
         children = [feedCoordinator, profileCoordinator]
         
-        feedNav.setNavigationBarHidden(true, animated: false)
+        feedNav.setNavigationBarHidden(false, animated: false)
         profileNav.setNavigationBarHidden(true, animated: false)
     }
 }

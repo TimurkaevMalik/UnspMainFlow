@@ -21,27 +21,38 @@ final class PhotoFeedControllerFactory {
             requestFactory: requestFactory,
             helper: networkHelper
         )
+        let photoSearchService = PhotosSearchService(
+            requestFactory: requestFactory,
+            helper: networkHelper
+        )
+        
         let photoDataRepo = PhotoDataRepository(
             photoDataService: photoDataService,
+            tokenStorage: tokenStorage
+        )
+        let photoSearchRepo = PhotosSearchRepository(
+            photosDataService: photoSearchService,
             tokenStorage: tokenStorage
         )
         
         let imageService = ImageService()
         let imagesRepo = ImagesRepository(imageService: imageService)
         
-        let viewModel = PhotosViewModel(
+        let viewModel = PhotosSearchViewModel(
             photoDataRepo: photoDataRepo,
+            photoSearchRepo: photoSearchRepo,
             imagesRepo: imagesRepo
         )
         
         let layoutFactory = TripleSectionLayoutFactory()
         
-        let imageCollectionController = ImageCollectionController(
+        let imageCollectionController = SearchImageCollectionController(
             output: output,
             vm: viewModel,
             layoutFactory: layoutFactory
         )
-        
-        return PhotoFeedController(photoFeedCollectionController: imageCollectionController)
+        imageCollectionController.title = "Remove title"
+//        return PhotoFeedController(photoFeedCollectionController: imageCollectionController)
+        return imageCollectionController
     }
 }

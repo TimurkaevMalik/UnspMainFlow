@@ -37,7 +37,6 @@ final class PhotosViewModel: PhotosViewModelProtocol {
     private var imageItemTasks: [Int: Task<(), Never>] = [:]
     private var photosPageTasks: [Int: Task<(), Never>] = [:]
     private var currentPhotosPage = 0
-    private var accessToken = ""
     
     private let photoDataRepo: PhotoDataRepositoryProtocol
     private let imagesRepo: ImagesRepositoryProtocol
@@ -74,7 +73,7 @@ final class PhotosViewModel: PhotosViewModelProtocol {
                 let photoItems: [PhotoItem] = makePhotoItems(newPhotos)
                 
                 let data: [(data: Photo, item: ImageItem)] = zip(newPhotos, photoItems).map({
-                    ($0, ImageItem(id: $1.id, index: $1.index))
+                    ($0, ImageItem(id: $1.id))
                 })
                 
                 photoEntries.append(contentsOf: data)

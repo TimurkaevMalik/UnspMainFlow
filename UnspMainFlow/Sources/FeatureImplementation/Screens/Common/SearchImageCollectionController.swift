@@ -1,24 +1,19 @@
 //
-//  ImageCollectionController.swift
+//  SearchImageCollectionController.swift
 //  UnspMainFlow
 //
-//  Created by Malik Timurkaev on 12.10.2025.
+//  Created by Malik Timurkaev on 18.10.2025.
 //
 
 import UIKit
 import CoreKit
 import Combine
 
-@MainActor
-protocol ImageCollectionControllerOutput: AnyObject {
-    func didSelect(image: UIImage, data: PhotoItem)
-}
-
 // MARK: - Lifecycle
-final class ImageCollectionController: UICollectionViewController {
+final class SearchImageCollectionController: UICollectionViewController {
     
     private weak var output: ImageCollectionControllerOutput?
-    private let vm: PhotosViewModel
+    private let vm: PhotosSearchViewModelProtocol
     private var cancellable = Set<AnyCancellable>()
     private lazy var dataSource = makeDataSource()
     private var nextPageTriggerIndex = IndexPath(item: 0, section: 0)
@@ -26,7 +21,7 @@ final class ImageCollectionController: UICollectionViewController {
     
     init(
         output: ImageCollectionControllerOutput? = nil,
-        vm: PhotosViewModel,
+        vm: PhotosSearchViewModelProtocol,
         layoutFactory: CollectionCompositionalLayoutFactory
     ) {
         self.output = output
@@ -44,12 +39,12 @@ final class ImageCollectionController: UICollectionViewController {
         configureSnapshot()
         configureCollection()
         bindViewModel()
-        vm.fetchPhotosData()
+        vm.fetchPhotosData(query: "")
     }
 }
 
 // MARK: - Bindings
-private extension ImageCollectionController {
+private extension SearchImageCollectionController {
     func bindViewModel() {
         vm.photosState
             .receive(on: DispatchQueue.main)
@@ -103,12 +98,12 @@ private extension ImageCollectionController {
     
     func loadNextPageIfNeeded(at index: IndexPath) {
         guard index >= nextPageTriggerIndex else { return }
-        vm.fetchPhotosData()
+        vm.fetchPhotosData(query: "")
     }
 }
 
 // MARK: - UICollectionViewDelegate
-extension ImageCollectionController {
+extension SearchImageCollectionController {
     override func collectionView(
         _ collectionView: UICollectionView,
         didSelectItemAt indexPath: IndexPath
@@ -120,7 +115,7 @@ extension ImageCollectionController {
 }
 
 // MARK: - UICollectionViewDelegate
-extension ImageCollectionController: UICollectionViewDataSourcePrefetching {
+extension SearchImageCollectionController: UICollectionViewDataSourcePrefetching {
     func collectionView(_ collectionView: UICollectionView, prefetchItemsAt indexPaths: [IndexPath]) {
         guard let indexPath = indexPaths.last else { return }
         loadNextPageIfNeeded(at: indexPath)
@@ -128,7 +123,7 @@ extension ImageCollectionController: UICollectionViewDataSourcePrefetching {
 }
 
 //MARK: - Configuration
-private extension ImageCollectionController {
+private extension SearchImageCollectionController {
     func configureCollection() {
         collectionView.backgroundColor = Palette.Asset.whitePrimary.uiColor
         collectionView.dataSource = dataSource
@@ -160,14 +155,13 @@ private extension ImageCollectionController {
     }
 }
 
-// MARK: - Typealiases & Section
-private extension ImageCollectionController {
+// MARK: - Typealias & Section
+extension SearchImageCollectionController: DiffableCollectionControllerProtocol {
+    typealias Section = CustomSection
     typealias Cell = ImageCollectionCell
-    typealias Snapshot = NSDiffableDataSourceSnapshot<Section, ImageItem.ID>
-    typealias CellRegistration = UICollectionView.CellRegistration<Cell, ImageItem.ID>
-    typealias DataSource = UICollectionViewDiffableDataSource<Section, ImageItem.ID>
-    
-    enum Section: Int {
+    typealias ItemIdentifier = ImageItem.ID
+        
+    enum CustomSection: Int {
         case main
     }
 }
