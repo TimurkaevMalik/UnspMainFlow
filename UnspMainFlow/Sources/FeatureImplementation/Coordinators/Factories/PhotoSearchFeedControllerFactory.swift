@@ -1,5 +1,5 @@
 //
-//  PhotoFeedControllerFactory.swift
+//  PhotoSearchFeedControllerFactory.swift
 //  UnspMainFlow
 //
 //  Created by Malik Timurkaev on 17.10.2025.
@@ -8,7 +8,7 @@
 import UIKit
 
 @MainActor
-final class PhotoFeedControllerFactory {
+final class PhotoSearchFeedControllerFactory {
     
     func makeWith(
         tokenStorage: TokenStorageProtocol,
@@ -36,7 +36,9 @@ final class PhotoFeedControllerFactory {
         )
         
         let imageService = ImageService()
-        let imagesRepo = ImagesRepository(imageService: imageService)
+        let imagesRepo = ImagesRepository(
+            imageService: imageService
+        )
         
         let viewModel = PhotosSearchViewModel(
             photoDataRepo: photoDataRepo,
@@ -46,13 +48,11 @@ final class PhotoFeedControllerFactory {
         
         let layoutFactory = TripleSectionLayoutFactory()
         
-        let imageCollectionController = SearchImageCollectionController(
+        let searchFeedView = PhotoSearchFeedView(
             output: output,
             vm: viewModel,
             layoutFactory: layoutFactory
         )
-        imageCollectionController.title = "Remove title"
-        return imageCollectionController
-//        return PhotoFeedController(photoFeedCollectionController: imageCollectionController)
+        return PhotoSearchFeedController(rootView: searchFeedView)
     }
 }

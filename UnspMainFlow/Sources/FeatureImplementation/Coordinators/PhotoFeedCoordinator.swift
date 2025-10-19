@@ -33,7 +33,7 @@ final class PhotoFeedCoordinator: Coordinator {
 
 private extension PhotoFeedCoordinator {
     func showPhotoFeedScreen() {
-        let vc = PhotoFeedControllerFactory().makeWith(
+        let vc = PhotoSearchFeedControllerFactory().makeWith(
             tokenStorage: TokenCache(keychain: keychain),
             output: self
         )
