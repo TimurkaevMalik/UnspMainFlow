@@ -78,6 +78,7 @@ final class PhotoInfoView: UIView {
         setupViewsHierarchy()
         setupSubViews()
         setupInfoContainerView()
+        setupActions()
     }
 }
 

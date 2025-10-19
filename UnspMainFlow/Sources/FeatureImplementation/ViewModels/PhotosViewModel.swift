@@ -7,6 +7,7 @@
 
 import Foundation
 import Combine
+import NetworkKit
 
 @MainActor
 protocol PhotosViewModelProtocol {
@@ -30,18 +31,19 @@ enum PhotoDataServiceState {
 
 final class PhotosViewModel: PhotosViewModelProtocol {
     
+    // MARK: - Properties
     let photosState: PassthroughSubject<State, Never> = .init()
     let imagePublisher: PassthroughSubject<ImageItem, Never> = .init()
     
     private var photoEntries: [(data: Photo, item: ImageItem)] = []
-    private var imageItemTasks: [Int: Task<(), Never>] = [:]
-    private var photosPageTasks: [Int: Task<(), Never>] = [:]
     private var currentPhotosPage = 0
-    private var accessToken = ""
+    
+    // MARK: - Services
+    private let taskManager = GroupedTasksManager<TaskGroup, UUID>()
+    private let dateFormatter = DisplayDateFormatter()
     
     private let photoDataRepo: PhotoDataRepositoryProtocol
     private let imagesRepo: ImagesRepositoryProtocol
-    private let dateFormatter = DisplayDateFormatter()
     
     init(
         photoDataRepo: PhotoDataRepositoryProtocol,
@@ -52,41 +54,45 @@ final class PhotosViewModel: PhotosViewModelProtocol {
     }
     
     func fetchPhotosData() {
-        guard photosPageTasks[currentPhotosPage + 1] == nil else { return }
+        let pageKey = UUID()
+        let taskKey = taskManager.makeKey(
+            group: .photoData,
+            taskID: pageKey
+        )
+        
+        guard taskManager.get(for: taskKey) == nil else { return }
         
         updatePhotosState(.loading)
         currentPhotosPage += 1
-        let pageKey = currentPhotosPage
         
         let task = Task {
             do {
-                var newPhotos = try await photoDataRepo.fetch(
+                let newPhotos = try await photoDataRepo.fetch(
                     page: currentPhotosPage,
                     size: 20
                 )
                 
+                try Task.checkCancellation()
+                
                 ///На стороне Unsplash баг с дупликатами
                 ///Использую костыль ниже
-                if newPhotos.count == 20 {
-                    newPhotos.removeLast(3)
-                }
+                let cleanPhotos = Array(newPhotos.prefix(17))
                 
-                let photoItems: [PhotoItem] = makePhotoItems(newPhotos)
+                let photoItems: [PhotoItem] = makePhotoItems(cleanPhotos)
                 
-                let data: [(data: Photo, item: ImageItem)] = zip(newPhotos, photoItems).map({
-                    ($0, ImageItem(id: $1.id, index: $1.index))
+                let data: [(data: Photo, item: ImageItem)] = zip(cleanPhotos, photoItems).map({
+                    ($0, ImageItem(id: $1.id))
                 })
                 
                 photoEntries.append(contentsOf: data)
                 updatePhotosState(.loaded(photoItems))
             } catch {
+                currentPhotosPage -= 1
                 updatePhotosState(.failed(error))
             }
-            
-            photosPageTasks.removeValue(forKey: pageKey)
+            taskManager.remove(for: taskKey)
         }
-        
-        photosPageTasks[pageKey] = task
+        taskManager.set(task: task, for: taskKey)
     }
     
     func fetchImages(for indexes: [Int]) {
@@ -112,7 +118,13 @@ final class PhotosViewModel: PhotosViewModelProtocol {
 
 private extension PhotosViewModel {
     func fetchImage(at index: Int) {
-        guard imageItemTasks[index] == nil,
+    
+        let taskKey = taskManager.makeKey(
+            group: .imageItem,
+            taskID: UUID()
+        )
+        
+        guard taskManager.get(for: taskKey) == nil,
               photoEntries[index].item.image == nil,
               photoEntries.count > index
         else { return }
@@ -127,11 +139,9 @@ private extension PhotosViewModel {
             } catch {
                 print(error)
             }
-            
-            imageItemTasks.removeValue(forKey: index)
+            taskManager.remove(for: taskKey)
         }
-        
-        imageItemTasks[index] = task
+        taskManager.set(task: task, for: taskKey)
     }
     
     func makePhotoItems(_ photos: [Photo]) -> [PhotoItem] {
@@ -149,5 +159,12 @@ private extension PhotosViewModel {
     
     func updatePhotosState(_ state: State) {
         photosState.send(state)
+    }
+}
+
+private extension PhotosViewModel {
+    enum TaskGroup {
+        case photoData
+        case imageItem
     }
 }

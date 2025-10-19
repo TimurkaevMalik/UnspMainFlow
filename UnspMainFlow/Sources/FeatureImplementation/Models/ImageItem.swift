@@ -10,16 +10,10 @@ import UIKit
 ///Model for Presentation layer
 struct ImageItem: Hashable, Identifiable {
     var id: String
-    let index: Int
     var image: UIImage?
     
-    init(
-        id: String,
-        index: Int,
-        image: UIImage? = nil
-    ) {
+    init(id: String, image: UIImage? = nil) {
         self.id = id
-        self.index = index
         self.image = image
     }
     

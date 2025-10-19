@@ -6,13 +6,14 @@
 //
 
 import UIKit
+import NetworkKit
 
 @MainActor
 final class ProfileControllerFactory {
     
     func makeWith(
         tokenStorage: TokenStorageProtocol,
-        output: ImageCollectionControllerOutput? = nil
+        output: ImageCollectionOutput? = nil
     ) -> UIViewController {
         let requestFactory = AuthorizedRequestFactory()
         let networkHelper = DefaultNetworkServiceHelper()
@@ -23,7 +24,8 @@ final class ProfileControllerFactory {
         )
         let likedPhotoRepository = UserLikedPhotosRepository(
             photoDataService: likedPhotosService,
-            tokenStorage: tokenStorage
+            tokenStorage: tokenStorage,
+            preferences: UserDefaults.standard
         )
         
         let imageService = ImageService()

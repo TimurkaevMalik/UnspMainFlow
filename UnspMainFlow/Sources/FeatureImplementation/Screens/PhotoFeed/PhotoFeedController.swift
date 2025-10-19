@@ -11,13 +11,13 @@ import Combine
 
 final class PhotoFeedController: UIViewController {
     
-    private let photoFeedCollectionController: ImageCollectionController
+    private let photoFeedCollectionController: UICollectionViewController
     
     private lazy var rootView = {
         PhotoFeedView(photosCollectionView: photoFeedCollectionController.collectionView)
     }()
     
-    init(photoFeedCollectionController: ImageCollectionController) {
+    init(photoFeedCollectionController: UICollectionViewController) {
         self.photoFeedCollectionController = photoFeedCollectionController
         super.init(nibName: nil, bundle: nil)
     }
@@ -35,13 +35,5 @@ final class PhotoFeedController: UIViewController {
         super.viewDidLoad()
         addChild(photoFeedCollectionController)
         photoFeedCollectionController.didMove(toParent: self)
-        setUI()
-    }
-}
-
-private extension PhotoFeedController {
-    func setUI() {
-        rootView.backgroundColor = Palette.Asset.whitePrimary.uiColor
-        title = "Photo Feed"
     }
 }

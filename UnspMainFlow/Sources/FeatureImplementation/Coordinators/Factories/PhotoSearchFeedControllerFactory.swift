@@ -1,18 +1,19 @@
 //
-//  PhotoFeedControllerFactory.swift
+//  PhotoSearchFeedControllerFactory.swift
 //  UnspMainFlow
 //
 //  Created by Malik Timurkaev on 17.10.2025.
 //
 
 import UIKit
+import NetworkKit
 
 @MainActor
-final class PhotoFeedControllerFactory {
+final class PhotoSearchFeedControllerFactory {
     
     func makeWith(
         tokenStorage: TokenStorageProtocol,
-        output: ImageCollectionControllerOutput? = nil
+        output: ImageCollectionOutput? = nil
     ) -> UIViewController {
         let requestFactory = AuthorizedRequestFactory()
         let networkHelper = DefaultNetworkServiceHelper()
@@ -21,27 +22,38 @@ final class PhotoFeedControllerFactory {
             requestFactory: requestFactory,
             helper: networkHelper
         )
+        let photoSearchService = PhotosSearchService(
+            requestFactory: requestFactory,
+            helper: networkHelper
+        )
+        
         let photoDataRepo = PhotoDataRepository(
             photoDataService: photoDataService,
             tokenStorage: tokenStorage
         )
+        let photoSearchRepo = PhotosSearchRepository(
+            photosDataService: photoSearchService,
+            tokenStorage: tokenStorage
+        )
         
         let imageService = ImageService()
-        let imagesRepo = ImagesRepository(imageService: imageService)
+        let imagesRepo = ImagesRepository(
+            imageService: imageService
+        )
         
-        let viewModel = PhotosViewModel(
+        let viewModel = PhotosSearchViewModel(
             photoDataRepo: photoDataRepo,
+            photoSearchRepo: photoSearchRepo,
             imagesRepo: imagesRepo
         )
         
         let layoutFactory = TripleSectionLayoutFactory()
         
-        let imageCollectionController = ImageCollectionController(
+        let searchFeedView = PhotoSearchFeedView(
             output: output,
             vm: viewModel,
             layoutFactory: layoutFactory
         )
-        
-        return PhotoFeedController(photoFeedCollectionController: imageCollectionController)
+        return PhotoSearchFeedController(rootView: searchFeedView)
     }
 }

@@ -9,14 +9,15 @@ import UIKit
 import CoreKit
 import KeychainStorageKit
 import HelpersSharedUnsp
+import LoggingKit
 
 public final class RootUnspMainFlowCoordinator: FlowCoordinator {
     
     public var child: Coordinator?
     public weak var finishDelegate: CoordinatorFinishDelegate?
     
+    #warning("Можно ли передавать window в координатор для tabBar?")
     private let window: UIWindow
-    private let keychainFactory = KeychainStorageFactory()
     
     public init(
         finishDelegate: CoordinatorFinishDelegate? = nil,
@@ -27,11 +28,8 @@ public final class RootUnspMainFlowCoordinator: FlowCoordinator {
     }
     
     public func start() {
-#warning("remove ValetStorage")
-        let keychain = ValetStorage(id: " ", accessibility: .whenUnlockedThisDeviceOnly, logger: nil)
-        
-#warning("Set makeAuthorizedKeychain()")
-        if let keychain  {
+
+        if let keychain = makeAuthorizedKeychain() {
             let tabBarCoordinator = TabBarCoordinator(
                 finishDelegate: self,
                 keychain: keychain
@@ -43,7 +41,10 @@ public final class RootUnspMainFlowCoordinator: FlowCoordinator {
             window.makeKeyAndVisible()
             
         } else {
-            print("finish")
+            let logger = OSLogAdapter(subsystem: "", category: "")
+            let message = "UnspMainFlow has been terminated due to lack of authorization"
+            
+            logger.record(message, level: .notice)
             finish()
         }
     }
@@ -54,7 +55,7 @@ public final class RootUnspMainFlowCoordinator: FlowCoordinator {
 private extension RootUnspMainFlowCoordinator {
     func makeAuthorizedKeychain() -> KeychainStorageProtocol? {
         
-        if let keychain = keychainFactory.make(),
+        if let keychain =  KeychainStorageFactory().make(),
            let token = try? keychain.string(forKey: StorageKeys.accessToken.rawValue),
            !token.isEmpty {
             

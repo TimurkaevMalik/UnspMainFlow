@@ -6,28 +6,38 @@
 //
 
 import Foundation
+import CoreKit
+import HelpersSharedUnsp
 
 final class UserLikedPhotosRepository: PhotoDataRepositoryProtocol {
+    
     private let dateFormatter = DefaultDateFormatter()
     private let photoDataService: UserLikedPhotosServiceProtocol
     private let tokenStorage: TokenStorageProtocol
+    private let preferences: PreferencesProtocol
     
     init(
         photoDataService: UserLikedPhotosServiceProtocol,
-        tokenStorage: TokenStorageProtocol
+        tokenStorage: TokenStorageProtocol,
+        preferences: PreferencesProtocol
     ) {
         self.photoDataService = photoDataService
         self.tokenStorage = tokenStorage
+        self.preferences = preferences
     }
     
     func fetch(page: Int, size: Int) async throws -> [Photo] {
    
+        guard let user = preferences.retrieve(String.self, forKey: StorageKeys.currentUserID.rawValue) else {
+            throw PreferencesError.didNotFindUserID
+        }
+        
         let token = try tokenStorage.getToken()
-#warning("Set real user")
+        
         let photosDTO = try await photoDataService.fetchPhotos(
             page: page,
             size: size,
-            user: "andrew9955",
+            user: user,
             token: token
         )
         
@@ -54,5 +64,11 @@ private extension UserLikedPhotosRepository {
     
     func date(from string: String) -> Date? {
         dateFormatter.date(from: string)
+    }
+}
+
+extension UserLikedPhotosRepository {
+    enum PreferencesError: Error {
+        case didNotFindUserID
     }
 }
