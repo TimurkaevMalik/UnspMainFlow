@@ -32,7 +32,7 @@ final class PhotosSearchViewModel: PhotosSearchViewModelProtocol {
     private var currentPage = 0
     
     // MARK: - Services
-    private let taskManager = GropedTasksManager<TaskGroup, Int>()
+    private let taskManager = GropedTasksManager<TaskGroup, UUID>()
     private let dateFormatter = DisplayDateFormatter()
     
     private let photoDataRepo: PhotoDataRepositoryProtocol
@@ -87,10 +87,20 @@ final class PhotosSearchViewModel: PhotosSearchViewModelProtocol {
 // MARK: - Remote methods
 private extension PhotosSearchViewModel {
     func fetch(from source: Source) {
-        let pageKey = currentPage + 1
+        var ids = ["1111", "2222", "3333", "4444", "5555", "6666", "7777", "8888"]
+    
+        if source != .feed {
+            taskManager.removeAll()
+            searchedPhotoEntries.removeAll()
+            updatePhotosState(.loaded([]))
+            currentPage = 0
+        }
+        let id = ids.randomElement()!
+        let taskID = UUID()
+        
         let taskKey = taskManager.makeKey(.init(
             group: .photoData,
-            taskID: pageKey
+            taskID: taskID
         ))
         
         guard taskManager.get(for: taskKey) == nil else { return }
@@ -99,25 +109,28 @@ private extension PhotosSearchViewModel {
         currentPage += 1
         
         let task = Task {
+            print("start", id)
             do {
                 let newPhotos: [Photo]
                 
                 switch source {
                 case .feed:
+                    print("started data task", id)
                     newPhotos = try await photoDataRepo.fetch(
                         page: currentPage,
                         size: 20
                     )
                 case .search(let query):
+                    print("started search task", id)
                     newPhotos = try await photoSearchRepo.fetch(
                         page: currentPage,
                         size: 20,
                         query: query
                     )
                 }
-                
+                print("finished task", id)
                 try Task.checkCancellation()
-                
+                print("Checked cancellation")
                 ///На стороне Unsplash баг с дупликатами
                 ///Использую костыль ниже
                 let cleanPhotos = Array(newPhotos.prefix(17))
@@ -137,10 +150,11 @@ private extension PhotosSearchViewModel {
                 
                 updatePhotosState(.loaded(photoItems))
             } catch {
-                currentPage -= 1
+//                currentPage -= 1
+                print("currentPage", currentPage, ". id", id)
                 updatePhotosState(.failed(error))
             }
-            
+            print("didcome for", taskManager.get(for: taskKey), "with id", id)
             taskManager.remove(for: taskKey)
         }
         
@@ -148,9 +162,10 @@ private extension PhotosSearchViewModel {
     }
     
     func fetchImage(at index: Int) {
+        let taskID = UUID()
         let taskKey = taskManager.makeKey(.init(
             group: .imageItem,
-            taskID: index
+            taskID: taskID
         ))
         
         guard taskManager.get(for: taskKey) == nil,
@@ -210,9 +225,9 @@ private extension PhotosSearchViewModel {
         
         switch source {
         case .feed:
-            searchedPhotoEntries = []
+            searchedPhotoEntries.removeAll()
         case .search:
-            feedPhotoEntries = []
+            feedPhotoEntries.removeAll()
         }
     }
 }

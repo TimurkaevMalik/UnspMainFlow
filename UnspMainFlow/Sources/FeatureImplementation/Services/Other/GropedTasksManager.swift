@@ -33,6 +33,7 @@ extension GropedTasksManager {
     
     func removeAll() {
         tasks.forEach({ $0.value.cancel() })
+        tasks.removeAll()
     }
     
     func makeKey(_ key: TaskKey) -> TaskKey {
