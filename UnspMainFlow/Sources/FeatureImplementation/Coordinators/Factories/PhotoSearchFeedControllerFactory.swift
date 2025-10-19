@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import NetworkKit
 
 @MainActor
 final class PhotoSearchFeedControllerFactory {

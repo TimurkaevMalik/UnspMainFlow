@@ -7,6 +7,7 @@
 
 import Foundation
 import Combine
+import NetworkKit
 
 @MainActor
 protocol PhotosViewModelProtocol {
@@ -38,7 +39,7 @@ final class PhotosViewModel: PhotosViewModelProtocol {
     private var currentPhotosPage = 0
     
     // MARK: - Services
-    private let taskManager = GropedTasksManager<TaskGroup, Int>()
+    private let taskManager = GroupedTasksManager<TaskGroup, UUID>()
     private let dateFormatter = DisplayDateFormatter()
     
     private let photoDataRepo: PhotoDataRepositoryProtocol
@@ -53,11 +54,11 @@ final class PhotosViewModel: PhotosViewModelProtocol {
     }
     
     func fetchPhotosData() {
-        let pageKey = currentPhotosPage + 1
-        let taskKey = taskManager.makeKey(.init(
+        let pageKey = UUID()
+        let taskKey = taskManager.makeKey(
             group: .photoData,
             taskID: pageKey
-        ))
+        )
         
         guard taskManager.get(for: taskKey) == nil else { return }
         
@@ -117,10 +118,11 @@ final class PhotosViewModel: PhotosViewModelProtocol {
 
 private extension PhotosViewModel {
     func fetchImage(at index: Int) {
-        let taskKey = taskManager.makeKey(.init(
+    
+        let taskKey = taskManager.makeKey(
             group: .imageItem,
-            taskID: index
-        ))
+            taskID: UUID()
+        )
         
         guard taskManager.get(for: taskKey) == nil,
               photoEntries[index].item.image == nil,

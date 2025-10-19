@@ -89,7 +89,7 @@ private extension PhotoSearchFeedView {
         } else {
             applyAdditional(itemsIDs: photosData.map({ $0.id }))
         }
-        print("first index", index)
+
         nextPageTriggerIndex = index + paginationOffset
     }
 
@@ -138,14 +138,6 @@ extension PhotoSearchFeedView: UICollectionViewDataSourcePrefetching {
         _ collectionView: UICollectionView,
         prefetchItemsAt indexPaths: [IndexPath]
     ) {
-
-        print(nextPageTriggerIndex, indexPaths.max()!.item)
-        print(indexPaths)
-        print("Total items:", dataSource.snapshot().itemIdentifiers.count)
-
-        print("contentSize:", collectionView.contentSize.height)
-        print("bounds:", collectionView.bounds.height)
-
         guard let index = indexPaths.max()?.item else { return }
         loadNextPageIfNeeded(at: index)
     }
@@ -170,6 +162,7 @@ private extension PhotoSearchFeedView {
         collectionView.backgroundColor = Palette.Asset.whitePrimary.uiColor
         collectionView.dataSource = dataSource
         collectionView.prefetchDataSource = self
+        collectionView.delegate = self
         collectionView.register(Cell.self, identifier: Cell.identifier)
     }
 

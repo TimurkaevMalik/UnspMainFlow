@@ -53,13 +53,13 @@ fileprivate enum SPMDependency {
     static let coreKit = PackageModel(
         name: "CoreKit",
         url: "https://github.com/TimurkaevMalik/CoreKit.git",
-        requirement: .version(.init(2, 0, 0))
+        requirement: .version(.init(2, 3, 2))
     )
     
     static let networkKit = PackageModel(
         name: "NetworkKit",
         url: "https://github.com/TimurkaevMalik/NetworkKit.git",
-        requirement: .branch("main")
+        requirement: .version(.init(1, 3, 0))
     )
     
     static let helpersSharedUnsp = PackageModel(

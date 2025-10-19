@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import NetworkKit
 
 @MainActor
 final class ProfileControllerFactory {
@@ -23,7 +24,8 @@ final class ProfileControllerFactory {
         )
         let likedPhotoRepository = UserLikedPhotosRepository(
             photoDataService: likedPhotosService,
-            tokenStorage: tokenStorage
+            tokenStorage: tokenStorage,
+            preferences: UserDefaults.standard
         )
         
         let imageService = ImageService()
