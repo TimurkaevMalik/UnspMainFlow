@@ -18,7 +18,7 @@ public enum SPMDependency {
     static let loggingKit = PackageModel(
         name: "LoggingKit",
         url: "https://github.com/TimurkaevMalik/LoggingKit.git",
-        requirement: .version(.init(1, 0, 0))
+        requirement: .version(.init(1, 1, 1))
     )
     
     static let keychainStorageKit = PackageModel(

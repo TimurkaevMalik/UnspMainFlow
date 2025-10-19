@@ -31,8 +31,6 @@ final class TokenCache: TokenStorageProtocol {
         
         cachedToken = try keychain.string(forKey: StorageKeys.accessToken.rawValue) ?? ""
         
-        cachedToken = globalToken
-
         return cachedToken
     }
 

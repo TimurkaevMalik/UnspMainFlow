@@ -7,9 +7,6 @@
 
 import Foundation
 
-#warning("remove token")
-let globalToken = "0ZxCjq4iF-nGhW88JeFHY2z3e3ALKDwVLWedKZ42_3g"
-
 enum QueryItemNames: String {
     case page = "page"
     case perPage = "per_page"

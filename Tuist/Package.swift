@@ -8,8 +8,8 @@ import PackageDescription
         productTypes: [
             SPMDependency.snapKit.name: .framework,
             SPMDependency.coreKit.name: .framework,
-            SPMDependency.loggingKit.name: .framework,
             SPMDependency.networkKit.name: .framework,
+            SPMDependency.loggingKit.name: .framework,
             SPMDependency.helpersSharedUnsp.name: .framework,
             SPMDependency.keychainStorageKit.name: .framework
         ]
@@ -22,8 +22,8 @@ let package = Package(
     dependencies: [
         .make(from: SPMDependency.snapKit),
         .make(from: SPMDependency.coreKit),
-        .make(from: SPMDependency.loggingKit),
         .make(from: SPMDependency.networkKit),
+        .make(from: SPMDependency.loggingKit),
         .make(from: SPMDependency.helpersSharedUnsp),
         .make(from: SPMDependency.keychainStorageKit)
     ]
@@ -41,9 +41,9 @@ fileprivate enum SPMDependency {
     static let loggingKit = PackageModel(
         name: "LoggingKit",
         url: "https://github.com/TimurkaevMalik/LoggingKit.git",
-        requirement: .version(.init(1, 0, 0))
+        requirement: .version(.init(1, 1, 1))
     )
-    
+
     static let keychainStorageKit = PackageModel(
         name: "KeychainStorageKit",
         url: "https://github.com/TimurkaevMalik/KeychainStorageKit.git",
@@ -61,7 +61,7 @@ fileprivate enum SPMDependency {
         url: "https://github.com/TimurkaevMalik/NetworkKit.git",
         requirement: .version(.init(1, 3, 0))
     )
-    
+        
     static let helpersSharedUnsp = PackageModel(
         name: "HelpersSharedUnsp",
         url: "https://github.com/TimurkaevMalik/HelpersSharedUnsp.git",

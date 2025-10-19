@@ -9,12 +9,14 @@ import UIKit
 import CoreKit
 import KeychainStorageKit
 import HelpersSharedUnsp
+import LoggingKit
 
 public final class RootUnspMainFlowCoordinator: FlowCoordinator {
     
     public var child: Coordinator?
     public weak var finishDelegate: CoordinatorFinishDelegate?
     
+    #warning("Можно ли передавать window в координатор для tabBar?")
     private let window: UIWindow
     
     public init(
@@ -26,11 +28,8 @@ public final class RootUnspMainFlowCoordinator: FlowCoordinator {
     }
     
     public func start() {
-#warning("remove ValetStorage")
-        let keychain = ValetStorage(id: " ", accessibility: .whenUnlockedThisDeviceOnly, logger: nil)
-        
-#warning("Set makeAuthorizedKeychain()")
-        if let keychain  {
+
+        if let keychain = makeAuthorizedKeychain() {
             let tabBarCoordinator = TabBarCoordinator(
                 finishDelegate: self,
                 keychain: keychain
@@ -42,7 +41,10 @@ public final class RootUnspMainFlowCoordinator: FlowCoordinator {
             window.makeKeyAndVisible()
             
         } else {
-            print("finish")
+            let logger = OSLogAdapter(subsystem: "", category: "")
+            let message = "UnspMainFlow has been terminated due to lack of authorization"
+            
+            logger.record(message, level: .notice)
             finish()
         }
     }
