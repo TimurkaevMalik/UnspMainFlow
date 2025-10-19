@@ -81,7 +81,7 @@ private extension SearchImageCollectionController {
     }
     
     func handleLoaded(photosData: [PhotoItem]) {
-        guard let index = photosData.first?.index else { return }
+        let index = photosData.first?.index ?? 0
         
         if index == 0 {
             applyNew(itemsIDs: photosData.map({ $0.id }))

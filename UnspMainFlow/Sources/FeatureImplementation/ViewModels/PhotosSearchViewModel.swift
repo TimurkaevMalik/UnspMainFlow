@@ -88,13 +88,7 @@ final class PhotosSearchViewModel: PhotosSearchViewModelProtocol {
 private extension PhotosSearchViewModel {
     func fetch(from source: Source) {
         var ids = ["1111", "2222", "3333", "4444", "5555", "6666", "7777", "8888"]
-    
-        if source != .feed {
-            taskManager.removeAll()
-            searchedPhotoEntries.removeAll()
-            updatePhotosState(.loaded([]))
-            currentPage = 0
-        }
+            
         let id = ids.randomElement()!
         let taskID = UUID()
         
@@ -150,7 +144,6 @@ private extension PhotosSearchViewModel {
                 
                 updatePhotosState(.loaded(photoItems))
             } catch {
-//                currentPage -= 1
                 print("currentPage", currentPage, ". id", id)
                 updatePhotosState(.failed(error))
             }
@@ -219,16 +212,13 @@ private extension PhotosSearchViewModel {
     func updateSourceIfNeeded(_ source: Source) {
         guard currentSource != source else { return }
         
+        print(currentSource, source)
         currentSource = source
-        currentPage = 0
         taskManager.removeAll()
-        
-        switch source {
-        case .feed:
-            searchedPhotoEntries.removeAll()
-        case .search:
-            feedPhotoEntries.removeAll()
-        }
+        updatePhotosState(.loaded([]))
+        searchedPhotoEntries.removeAll()
+        feedPhotoEntries.removeAll()
+        currentPage = 0
     }
 }
 
@@ -245,9 +235,12 @@ private extension PhotosSearchViewModel {
         static func == (lhs: Self, rhs: Self) -> Bool {
             switch (lhs, rhs) {
                 
-            case (.feed, .feed): true
-            case (.search, .search): true
-            default: false
+            case (.feed, .feed):
+                true
+            case (.search(let lhsValue), .search(let rhsValue)):
+                lhsValue == rhsValue
+            default:
+                false
             }
         }
     }
