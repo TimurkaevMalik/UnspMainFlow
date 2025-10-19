@@ -42,6 +42,8 @@ private extension ProfileFlowCoordinator {
             tokenStorage: TokenCache(keychain: keychain),
             output: self
         )
+        
+        vc.title = "Favorite Photos"
         push(vc)
     }
     

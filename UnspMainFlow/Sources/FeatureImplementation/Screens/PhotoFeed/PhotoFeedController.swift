@@ -35,12 +35,5 @@ final class PhotoFeedController: UIViewController {
         super.viewDidLoad()
         addChild(photoFeedCollectionController)
         photoFeedCollectionController.didMove(toParent: self)
-        setUI()
-    }
-}
-
-private extension PhotoFeedController {
-    func setUI() {
-        title = "Photo Feed"
     }
 }

@@ -46,14 +46,13 @@ private extension TabBarCoordinator {
             navigation: feedNav,
             keychain: keychain
         )
-        feedCoordinator.start()
-        
         feedNav.tabBarItem = UITabBarItem(
             title: "Feed",
             image: UIImage(systemName: "photo.on.rectangle"),
             tag: 0
         )
-        
+        feedCoordinator.start()
+
         // MARK: - Profile tab
         let profileNav = UINavigationController()
         
@@ -62,12 +61,12 @@ private extension TabBarCoordinator {
             navigation: profileNav,
             keychain: keychain
         )
-        profileCoordinator.start()
-        
         profileNav.tabBarItem = UITabBarItem(
             title: "Profile",
             image: UIImage(systemName: "person"),
-            tag: 1)
+            tag: 1
+        )
+        profileCoordinator.start()
         
         // MARK: - TabBarController setup
         tabBarController.setViewControllers(
