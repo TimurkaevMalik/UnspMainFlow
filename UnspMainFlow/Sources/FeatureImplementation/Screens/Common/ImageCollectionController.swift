@@ -12,7 +12,7 @@ import Combine
 // MARK: - Lifecycle
 final class ImageCollectionController: UICollectionViewController {
     
-    private weak var output: ImageCollectionControllerOutput?
+    private weak var output: ImageCollectionOutput?
     private let vm: PhotosViewModelProtocol
     private var cancellable = Set<AnyCancellable>()
     private lazy var dataSource = makeDataSource()
@@ -20,7 +20,7 @@ final class ImageCollectionController: UICollectionViewController {
     private let paginationOffset = 5
     
     init(
-        output: ImageCollectionControllerOutput? = nil,
+        output: ImageCollectionOutput? = nil,
         vm: PhotosViewModelProtocol,
         layoutFactory: CollectionCompositionalLayoutFactory
     ) {

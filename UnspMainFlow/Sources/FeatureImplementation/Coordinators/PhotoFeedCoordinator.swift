@@ -41,7 +41,7 @@ private extension PhotoFeedCoordinator {
     }
 }
 
-extension PhotoFeedCoordinator: ImageCollectionControllerOutput {
+extension PhotoFeedCoordinator: ImageCollectionOutput {
     func didSelect(image: UIImage, data: PhotoItem) {
         let vc = PhotoInfoControllerFactory().makeWith(
             tokenStorage: TokenCache(keychain: keychain),

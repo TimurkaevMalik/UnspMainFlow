@@ -52,7 +52,7 @@ private extension ProfileFlowCoordinator {
     }
 }
 
-extension ProfileFlowCoordinator: ImageCollectionControllerOutput {
+extension ProfileFlowCoordinator: ImageCollectionOutput {
     func didSelect(image: UIImage, data: PhotoItem) {
         let vc = PhotoInfoControllerFactory().makeWith(
             tokenStorage: TokenCache(keychain: keychain),

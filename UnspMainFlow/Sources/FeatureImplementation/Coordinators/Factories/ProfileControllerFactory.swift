@@ -12,7 +12,7 @@ final class ProfileControllerFactory {
     
     func makeWith(
         tokenStorage: TokenStorageProtocol,
-        output: ImageCollectionControllerOutput? = nil
+        output: ImageCollectionOutput? = nil
     ) -> UIViewController {
         let requestFactory = AuthorizedRequestFactory()
         let networkHelper = DefaultNetworkServiceHelper()
