@@ -45,7 +45,7 @@ final class PhotoSearchFeedView: UIView {
         configureSearchBar()
         configureCollection()
         bindViewModel()
-        vm.fetchPhotosData()
+        vm.fetchNextPhotosPage()
     }
 }
 
@@ -85,9 +85,9 @@ private extension PhotoSearchFeedView {
         let index = photosData.first?.index ?? 0
 
         if index == 0 {
-            applyNew(itemsIDs: photosData.map({ $0.id }))
+            applyNew(itemsIDs: photosData.map(\.id))
         } else {
-            applyAdditional(itemsIDs: photosData.map({ $0.id }))
+            applyAdditional(itemsIDs: photosData.map(\.id))
         }
 
         nextPageTriggerIndex = index + paginationOffset
@@ -158,18 +158,11 @@ private extension PhotoSearchFeedView {
     }
 
     func configureCollection() {
-        configureSnapshot()
         collectionView.backgroundColor = Palette.Asset.whitePrimary.uiColor
         collectionView.dataSource = dataSource
         collectionView.prefetchDataSource = self
         collectionView.delegate = self
         collectionView.register(Cell.self, identifier: Cell.identifier)
-    }
-
-    func configureSnapshot() {
-        var snapshot = Snapshot()
-        snapshot.appendSections([.main])
-        dataSource.apply(snapshot)
     }
 
     func makeDataSource() -> DataSource {

@@ -51,7 +51,9 @@ final class PhotosSearchViewModel: PhotosSearchViewModelProtocol {
         self.imagesRepo = imagesRepo
     }
     
-    func fetchPhotosData() {
+    func refreshPhotoData() {}
+    
+    func fetchNextPhotosPage() {
         let source: Source = .feed
         updateSourceIfNeeded(source)
         fetch(from: source)

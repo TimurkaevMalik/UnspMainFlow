@@ -81,7 +81,7 @@ private extension ProfileView {
     }
     
     func setupData() {
-        avatarImageView.image = UIImage(resource: .userPhoto)
+        avatarImageView.image = UIImage(named: "UserPhoto")
         nameLabel.text = "Alex Junior"
         nicknameLabel.text = "@alexjunior"
     }

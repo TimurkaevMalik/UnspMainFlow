@@ -29,12 +29,21 @@ final class TokenCache: TokenStorageProtocol {
         }
 
         
-        cachedToken = try keychain.string(forKey: StorageKeys.accessToken.rawValue) ?? ""
+        let token = try keychain.string(forKey: StorageKeys.accessToken.rawValue)
         
+        guard let token else { throw CustomError.noTokenFound }
+        
+        cachedToken = token
         return cachedToken
     }
 
     func clearToken() {
         cachedToken = ""
+    }
+}
+
+extension TokenCache {
+    enum CustomError: Error {
+        case noTokenFound
     }
 }

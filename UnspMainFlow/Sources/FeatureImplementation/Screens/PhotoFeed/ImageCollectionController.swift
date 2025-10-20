@@ -16,7 +16,7 @@ final class ImageCollectionController: UICollectionViewController {
     private let vm: PhotosViewModelProtocol
     private var cancellable = Set<AnyCancellable>()
     private lazy var dataSource = makeDataSource()
-    private var nextPageTriggerIndex = IndexPath(item: 0, section: 0)
+    private var nextPageTriggerIndex = 0
     private let paginationOffset = 5
     
     init(
@@ -36,68 +36,84 @@ final class ImageCollectionController: UICollectionViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        configureSnapshot()
         configureCollection()
         bindViewModel()
-        vm.fetchPhotosData()
+        vm.fetchNextPhotosPage()
     }
 }
 
 // MARK: - Bindings
 private extension ImageCollectionController {
+    var refreshDataAction: UIAction {
+        .init { [weak self] _ in
+            self?.vm.refreshPhotoData()
+        }
+    }
+    
     func bindViewModel() {
         vm.photosState
             .receive(on: DispatchQueue.main)
             .sink { [weak self] state in
-                
+
                 switch state {
                 case .loading:
                     print("Loading")
-                    
+
                 case .loaded(let photosData):
                     self?.handleLoaded(photosData: photosData)
+                    self?.collectionView.refreshControl?.endRefreshing()
+                    
                 case .failed(let error):
                     print(error)
+                    self?.collectionView.refreshControl?.endRefreshing()
                 }
             }
             .store(in: &cancellable)
-        
+
         vm.imagePublisher
             .collect(.byTime(DispatchQueue.main, .seconds(1)))
             .receive(on: DispatchQueue.main)
-            .map({ item in
-                item.map({ $0.id })
-            })
+            .map({ $0.map(\.id) })
             .sink { [weak self] IDs in
                 self?.updateSnapshot(itemsIDs: IDs)
             }
             .store(in: &cancellable)
     }
-    
+
     func handleLoaded(photosData: [PhotoItem]) {
-        apply(itemsIDs: photosData.map({ $0.id }))
-        
-        nextPageTriggerIndex = IndexPath(
-            item: nextPageTriggerIndex.item + photosData.count - paginationOffset,
-            section: 0
-        )
+        let index = photosData.first?.index ?? 0
+
+        if index == 0 {
+            applyNew(itemsIDs: photosData.map({ $0.id }))
+        } else {
+            applyAdditional(itemsIDs: photosData.map({ $0.id }))
+        }
+
+        nextPageTriggerIndex = index + paginationOffset
     }
-    
+
     func updateSnapshot(itemsIDs: [String]) {
         var snapshot = dataSource.snapshot()
         snapshot.reconfigureItems(itemsIDs)
         dataSource.apply(snapshot, animatingDifferences: true)
     }
-    
-    func apply(itemsIDs: [String]) {
+
+    func applyAdditional(itemsIDs: [String]) {
         var snapshot = dataSource.snapshot()
         snapshot.appendItems(itemsIDs, toSection: .main)
         dataSource.apply(snapshot, animatingDifferences: true)
     }
-    
-    func loadNextPageIfNeeded(at index: IndexPath) {
+
+    func applyNew(itemsIDs: [String]) {
+        var snapshot = Snapshot()
+        snapshot.appendSections([.main])
+        snapshot.appendItems(itemsIDs, toSection: .main)
+        dataSource.apply(snapshot, animatingDifferences: true)
+    }
+
+    func loadNextPageIfNeeded(at index: Int) {
         guard index >= nextPageTriggerIndex else { return }
-        vm.fetchPhotosData()
+        vm.fetchNextPhotosPage()
     }
 }
 
@@ -117,7 +133,7 @@ extension ImageCollectionController {
 extension ImageCollectionController: UICollectionViewDataSourcePrefetching {
     func collectionView(_ collectionView: UICollectionView, prefetchItemsAt indexPaths: [IndexPath]) {
         guard let indexPath = indexPaths.last else { return }
-        loadNextPageIfNeeded(at: indexPath)
+        loadNextPageIfNeeded(at: indexPath.item)
     }
 }
 
@@ -128,14 +144,14 @@ private extension ImageCollectionController {
         collectionView.dataSource = dataSource
         collectionView.prefetchDataSource = self
         collectionView.register(Cell.self, identifier: Cell.identifier)
+        
+        collectionView.refreshControl = UIRefreshControl()
+        collectionView.refreshControl?.addAction(
+            refreshDataAction,
+            for: .valueChanged
+        )
     }
-    
-    func configureSnapshot() {
-        var snapshot = Snapshot()
-        snapshot.appendSections([.main])
-        dataSource.apply(snapshot)
-    }
-    
+        
     func makeDataSource() -> DataSource {
         UICollectionViewDiffableDataSource(
             collectionView: collectionView,

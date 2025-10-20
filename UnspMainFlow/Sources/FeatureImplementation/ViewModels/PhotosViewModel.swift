@@ -16,9 +16,10 @@ protocol PhotosViewModelProtocol {
     var photosState: PassthroughSubject<State, Never> { get }
     var imagePublisher: PassthroughSubject<ImageItem, Never> { get }
     
-    func fetchPhotosData()
+    func refreshPhotoData()
+    func fetchNextPhotosPage()
     func fetchImages(for indexes: [Int])
-    
+
     func imageItem(at index: Int) -> ImageItem
     func photoItem(at index: Int) -> PhotoItem
 }
@@ -35,13 +36,13 @@ final class PhotosViewModel: PhotosViewModelProtocol {
     let photosState: PassthroughSubject<State, Never> = .init()
     let imagePublisher: PassthroughSubject<ImageItem, Never> = .init()
     
-    private var photoEntries: [(data: Photo, item: ImageItem)] = []
     private var currentPhotosPage = 0
-    
+    private var photoEntries: [(data: Photo, item: ImageItem)] = []
+
     // MARK: - Services
-    private let taskManager = GroupedTasksManager<TaskGroup, UUID>()
     private let dateFormatter = DisplayDateFormatter()
-    
+    private let taskManager = GroupedTasksManager<TaskGroup, UUID>()
+
     private let photoDataRepo: PhotoDataRepositoryProtocol
     private let imagesRepo: ImagesRepositoryProtocol
     
@@ -53,7 +54,14 @@ final class PhotosViewModel: PhotosViewModelProtocol {
         self.imagesRepo = imagesRepo
     }
     
-    func fetchPhotosData() {
+    func refreshPhotoData() {
+        taskManager.removeAll()
+        photoEntries.removeAll()
+        currentPhotosPage = 0
+        fetchNextPhotosPage()
+    }
+    
+    func fetchNextPhotosPage() {
         let pageKey = UUID()
         let taskKey = taskManager.makeKey(
             group: .photoData,
@@ -83,7 +91,7 @@ final class PhotosViewModel: PhotosViewModelProtocol {
                 let data: [(data: Photo, item: ImageItem)] = zip(cleanPhotos, photoItems).map({
                     ($0, ImageItem(id: $1.id))
                 })
-                
+                print("finished")
                 photoEntries.append(contentsOf: data)
                 updatePhotosState(.loaded(photoItems))
             } catch {
@@ -100,18 +108,19 @@ final class PhotosViewModel: PhotosViewModelProtocol {
     }
     
     func imageItem(at index: Int) -> ImageItem {
-        photoEntries[index].item
+        return photoEntries[index].item
     }
     
     func photoItem(at index: Int) -> PhotoItem {
         let photoData = photoEntries[index]
         
-        return PhotoItem(id: photoData.item.id,
-                         index: index,
-                         likes: photoData.data.likes,
-                         likedByUser: photoData.data.likedByUser,
-                         createdAt: dateFormatter.string(from: photoData.data.createdAt),
-                         description: photoData.data.description
+        return PhotoItem(
+            id: photoData.item.id,
+            index: index,
+            likes: photoData.data.likes,
+            likedByUser: photoData.data.likedByUser,
+            createdAt: string(from: photoData.data.createdAt),
+            description: photoData.data.description
         )
     }
 }
@@ -155,6 +164,10 @@ private extension PhotosViewModel {
                 description: element.description
             )
         })
+    }
+    
+    func string(from date: Date) -> String {
+        dateFormatter.string(from: date)
     }
     
     func updatePhotosState(_ state: State) {
