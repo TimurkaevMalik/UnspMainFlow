@@ -53,7 +53,7 @@ fileprivate enum SPMDependency {
     static let coreKit = PackageModel(
         name: "CoreKit",
         url: "https://github.com/TimurkaevMalik/CoreKit.git",
-        requirement: .version(.init(2, 3, 2))
+        requirement: .version(.init(2, 8, 0))
     )
     
     static let networkKit = PackageModel(
