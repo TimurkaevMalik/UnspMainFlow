@@ -19,7 +19,7 @@ let package = Package(
         .make(from: SPMDependency.coreKit),
         .make(from: SPMDependency.networkKit),
         .make(from: SPMDependency.loggingKit),
-        .make(from: SPMDependency.keychainStorageKit),
+//        .make(from: SPMDependency.keychainStorageKit),
         .make(from: SPMDependency.helpersSharedUnsp)
     ],
     targets: [
@@ -30,7 +30,7 @@ let package = Package(
                 .product(SPMDependency.coreKit.name),
                 .product(SPMDependency.networkKit.name),
                 .product(SPMDependency.loggingKit.name),
-                .product(SPMDependency.keychainStorageKit.name),
+//                .product(SPMDependency.keychainStorageKit.name),
                 .product(SPMDependency.helpersSharedUnsp.name)
             ],
             path: featureName,
