@@ -47,7 +47,7 @@ private extension PhotoLikeRepository {
     func makePhoto(_ photoDTO: PhotoDTO) throws -> Photo {
         
         guard let createdAt = date(from: photoDTO.createdAt) else {
-            throw RepositoryError.invalidDateString(photoDTO.createdAt)
+            throw RepositoryError.invalidDate(photoDTO.createdAt)
         }
         
         return Photo(
@@ -67,6 +67,6 @@ private extension PhotoLikeRepository {
 
 extension PhotoLikeRepository {
     enum RepositoryError: Error {
-        case invalidDateString(String)
+        case invalidDate(String)
     }
 }
