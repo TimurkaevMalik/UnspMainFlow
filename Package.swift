@@ -15,23 +15,23 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .make(from: SPMDependency.snapKit),
-        .make(from: SPMDependency.coreKit),
-        .make(from: SPMDependency.networkKit),
-        .make(from: SPMDependency.loggingKit),
+//        .make(from: SPMDependency.snapKit),
+//        .make(from: SPMDependency.coreKit),
+//        .make(from: SPMDependency.networkKit),
+//        .make(from: SPMDependency.loggingKit),
 //        .make(from: SPMDependency.keychainStorageKit),
-        .make(from: SPMDependency.helpersSharedUnsp)
+//        .make(from: SPMDependency.helpersSharedUnsp)
     ],
     targets: [
         .target(
             name: featureName,
             dependencies: [
-                .product(SPMDependency.snapKit.name),
-                .product(SPMDependency.coreKit.name),
-                .product(SPMDependency.networkKit.name),
-                .product(SPMDependency.loggingKit.name),
+//                .product(SPMDependency.snapKit.name),
+//                .product(SPMDependency.coreKit.name),
+//                .product(SPMDependency.networkKit.name),
+//                .product(SPMDependency.loggingKit.name),
 //                .product(SPMDependency.keychainStorageKit.name),
-                .product(SPMDependency.helpersSharedUnsp.name)
+//                .product(SPMDependency.helpersSharedUnsp.name)
             ],
             path: featureName,
             sources: ["Sources"]
