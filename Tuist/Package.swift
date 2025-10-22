@@ -6,7 +6,7 @@ import PackageDescription
 
     let packageSettings = PackageSettings(
         productTypes: [
-            SPMDependency.snapKit.name: .framework,
+            SPMDependency.snapKitWrapper.name: .framework,
             SPMDependency.coreKit.name: .framework,
             SPMDependency.networkKit.name: .framework,
             SPMDependency.loggingKit.name: .framework,
@@ -20,7 +20,7 @@ import PackageDescription
 let package = Package(
     name: "UnspMainFlow",
     dependencies: [
-        .make(from: SPMDependency.snapKit),
+        .make(from: SPMDependency.snapKitWrapper),
         .make(from: SPMDependency.coreKit),
         .make(from: SPMDependency.networkKit),
         .make(from: SPMDependency.loggingKit),
@@ -31,10 +31,10 @@ let package = Package(
 
 /// MARK: - Dependencies
 fileprivate enum SPMDependency {
-    static let snapKit = PackageModel(
-        name: "SnapKit",
-        url: "https://github.com/SnapKit/SnapKit.git",
-        requirement: .version(.init(5, 7, 0))
+    static let snapKitWrapper = PackageModel(
+        name: "SnapKitWrapper",
+        url: "https://github.com/TimurkaevMalik/SnapKitWrapper.git",
+        requirement: .version(.init(5, 8, 0))
     )
 
     // MARK: - My own libraries

@@ -1,5 +1,5 @@
 {
-  "originHash" : "8e04dd83ea9994255eda2554e8961e74e434676597b46e925523fd19d51b9551",
+  "originHash" : "5223865fbf86bbfd860772f2d5f002f3e774e0e6575a851e1d9102ef8ca56bd3",
   "pins" : [
     {
       "identity" : "corekit",
@@ -53,6 +53,15 @@
       "state" : {
         "revision" : "2842e6e84e82eb9a8dac0100ca90d9444b0307f4",
         "version" : "5.7.1"
+      }
+    },
+    {
+      "identity" : "snapkitwrapper",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/TimurkaevMalik/SnapKitWrapper.git",
+      "state" : {
+        "revision" : "842587aa99882126eed2f36c1628a66d5be06542",
+        "version" : "5.8.0"
       }
     },
     {
