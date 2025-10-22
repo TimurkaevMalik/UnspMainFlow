@@ -27,7 +27,7 @@ final class UserLikedPhotosRepository: PhotoDataRepositoryProtocol {
     }
     
     func fetch(page: Int, size: Int) async throws -> [Photo] {
-   
+        
         guard let user = preferences.retrieve(String.self, forKey: StorageKeys.currentUserID.rawValue) else {
             throw PreferencesError.didNotFindUserID
         }
@@ -57,7 +57,7 @@ private extension UserLikedPhotosRepository {
                 likes: $0.likes,
                 likedByUser: $0.likedByUser,
                 createdAt: createdAt,
-                description: $0.description
+                description: $0.description ?? ""
             )
         })
     }

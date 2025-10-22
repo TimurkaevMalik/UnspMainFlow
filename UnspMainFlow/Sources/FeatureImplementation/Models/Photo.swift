@@ -8,7 +8,7 @@
 import Foundation
 
 ///Model for Domain layer
-struct Photo {
+struct Photo: Sendable {
     let id: String
     let urls: PhotoURLs
     let likes: Int

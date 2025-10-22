@@ -28,6 +28,7 @@ public final class RootUnspMainFlowCoordinator: FlowCoordinator {
     }
     
     public func start() {
+        
         if let keychain = makeAuthorizedKeychain() {
             let tabBarCoordinator = TabBarCoordinator(
                 finishDelegate: self,

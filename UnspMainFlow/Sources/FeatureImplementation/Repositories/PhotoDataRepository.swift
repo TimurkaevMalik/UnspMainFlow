@@ -52,7 +52,7 @@ private extension PhotoDataRepository {
                 likes: $0.likes,
                 likedByUser: $0.likedByUser,
                 createdAt: createdAt,
-                description: $0.description
+                description: $0.description ?? ""
             )
         })
     }

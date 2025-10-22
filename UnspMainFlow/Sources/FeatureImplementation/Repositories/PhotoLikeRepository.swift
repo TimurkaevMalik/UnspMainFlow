@@ -56,7 +56,7 @@ private extension PhotoLikeRepository {
             likes: photoDTO.likes,
             likedByUser: photoDTO.likedByUser,
             createdAt: createdAt,
-            description: photoDTO.description
+            description: photoDTO.description ?? ""
         )
     }
     

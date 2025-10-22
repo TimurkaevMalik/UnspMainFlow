@@ -32,7 +32,7 @@ final class TokenCache: TokenStorageProtocol {
         let token = try keychain.string(forKey: StorageKeys.accessToken.rawValue)
         
         guard let token else { throw CustomError.noTokenFound }
-        
+
         cachedToken = token
         return cachedToken
     }

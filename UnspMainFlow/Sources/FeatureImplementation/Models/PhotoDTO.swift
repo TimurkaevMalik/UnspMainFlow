@@ -9,13 +9,13 @@ import Foundation
 import NetworkKit
 
 ///Models for Data layer
-struct PhotoDTO: Decodable {
+struct PhotoDTO: Decodable, Sendable {
     let id: String
     let urls: PhotoURLs
     let likes: Int
     let likedByUser: Bool
     let createdAt: String
-    @DefaultEmptyString var description: String
+    var description: String?
     
     enum CodingKeys: String, CodingKey {
         case id, likes, description, urls
