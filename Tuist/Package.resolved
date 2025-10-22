@@ -1,5 +1,5 @@
 {
-  "originHash" : "0b7ffa421f3fafdee7bed410cca7d4a4ac3f78c3ff6dcfd506bdd730eefaddfe",
+  "originHash" : "8e04dd83ea9994255eda2554e8961e74e434676597b46e925523fd19d51b9551",
   "pins" : [
     {
       "identity" : "corekit",
@@ -7,7 +7,7 @@
       "location" : "https://github.com/TimurkaevMalik/CoreKit.git",
       "state" : {
         "revision" : "4b0546c8b0ad2599aa00be0425d01ee6967aa8de",
-        "version" : "2.3.2"
+        "version" : "2.8.0"
       }
     },
     {
