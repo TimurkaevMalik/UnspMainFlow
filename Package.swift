@@ -15,7 +15,7 @@ let package = Package(
         ),
     ],
     dependencies: [
-//        .make(from: SPMDependency.snapKit),
+//        .make(from: SPMDependency.snapKitWrapper),
 //        .make(from: SPMDependency.coreKit),
 //        .make(from: SPMDependency.networkKit),
 //        .make(from: SPMDependency.loggingKit),
@@ -26,7 +26,7 @@ let package = Package(
         .target(
             name: featureName,
             dependencies: [
-//                .product(SPMDependency.snapKit.name),
+//                .product(SPMDependency.snapKitWrapper.name),
 //                .product(SPMDependency.coreKit.name),
 //                .product(SPMDependency.networkKit.name),
 //                .product(SPMDependency.loggingKit.name),
@@ -41,29 +41,29 @@ let package = Package(
 
 /// MARK: - Dependencies
 fileprivate enum SPMDependency {
-    static let snapKit = PackageModel(
-        name: "SnapKit",
-        url: "https://github.com/SnapKit/SnapKit.git",
-        requirement: .version(.init(5, 7, 0))
+    static let snapKitWrapper = PackageModel(
+        name: "SnapKitWrapper",
+        url: "https://github.com/TimurkaevMalik/SnapKitWrapper.git",
+        requirement: .version(.init(5, 8, 0))
     )
 
     // MARK: - My own libraries
     static let loggingKit = PackageModel(
         name: "LoggingKit",
         url: "https://github.com/TimurkaevMalik/LoggingKit.git",
-        requirement: .version(.init(1, 1, 1))
+        requirement: .version(.init(1, 2, 0))
     )
     
     static let keychainStorageKit = PackageModel(
         name: "KeychainStorageKit",
         url: "https://github.com/TimurkaevMalik/KeychainStorageKit.git",
-        requirement: .version(.init(1, 1, 3))
+        requirement: .version(.init(1, 3, 0))
     )
     
     static let coreKit = PackageModel(
         name: "CoreKit",
         url: "https://github.com/TimurkaevMalik/CoreKit.git",
-        requirement: .version(.init(2, 3, 2))
+        requirement: .version(.init(2, 14, 0))
     )
     
     static let networkKit = PackageModel(
