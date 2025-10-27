@@ -3,7 +3,7 @@
 import PackageDescription
 
 let projName = "UnspMainFlow"
-let projNameDynamic = featureName + "-Dynamic"
+let projNameDynamic = projName + "-Dynamic"
 
 let package = Package(
     name: projName,
