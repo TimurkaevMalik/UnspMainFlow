@@ -1,0 +1,78 @@
+{
+  "originHash" : "92d0eb6fbdad8dc02d1244870c54b2941a337fdec7b1f7a8d232c62f328a7289",
+  "pins" : [
+    {
+      "identity" : "corekit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/TimurkaevMalik/CoreKit.git",
+      "state" : {
+        "revision" : "c53bda0bf5427b903efab89ed1b593f1f428f20c",
+        "version" : "2.15.0"
+      }
+    },
+    {
+      "identity" : "helperssharedunsp",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/TimurkaevMalik/HelpersSharedUnsp.git",
+      "state" : {
+        "branch" : "main",
+        "revision" : "2c885a374d2c9b4053539ce1c93002d6f6b9a9d3"
+      }
+    },
+    {
+      "identity" : "keychainstoragekit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/TimurkaevMalik/KeychainStorageKit.git",
+      "state" : {
+        "revision" : "8bc6c7cba501e3149a2a367ee126c7eed99928aa",
+        "version" : "1.9.0"
+      }
+    },
+    {
+      "identity" : "loggingkit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/TimurkaevMalik/LoggingKit.git",
+      "state" : {
+        "revision" : "21671dff7251bb8bb062eccf87b5896014851867",
+        "version" : "1.3.0"
+      }
+    },
+    {
+      "identity" : "networkkit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/TimurkaevMalik/NetworkKit.git",
+      "state" : {
+        "revision" : "b95b73baffcf938ac44405ee9896d5c1342af014",
+        "version" : "1.8.0"
+      }
+    },
+    {
+      "identity" : "snapkit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/SnapKit/SnapKit.git",
+      "state" : {
+        "revision" : "2842e6e84e82eb9a8dac0100ca90d9444b0307f4",
+        "version" : "5.7.1"
+      }
+    },
+    {
+      "identity" : "snapkitwrapper",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/TimurkaevMalik/SnapKitWrapper.git",
+      "state" : {
+        "revision" : "842587aa99882126eed2f36c1628a66d5be06542",
+        "version" : "5.8.0"
+      }
+    },
+    {
+      "identity" : "valet",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/square/Valet.git",
+      "state" : {
+        "revision" : "05c9e514fbd352a6866877ca31326b4e0b7d6d01",
+        "version" : "5.0.0"
+      }
+    }
+  ],
+  "version" : 3
+}

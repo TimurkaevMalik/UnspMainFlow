@@ -44,7 +44,7 @@ fileprivate enum SPMDependency {
         url: "https://github.com/TimurkaevMalik/SnapKitWrapper.git",
         requirement: .version(.init(5, 8, 0))
     )
-    
+
     static let loggingKit = PackageModel(
         name: "LoggingKit",
         url: "https://github.com/TimurkaevMalik/LoggingKit.git",
@@ -54,7 +54,7 @@ fileprivate enum SPMDependency {
     static let keychainStorageKit = PackageModel(
         name: "KeychainStorageKit",
         url: "https://github.com/TimurkaevMalik/KeychainStorageKit.git",
-        requirement: .version(.init(1, 8, 0))
+        requirement: .version(.init(1, 3, 0))
     )
     
     static let coreKit = PackageModel(
@@ -66,7 +66,7 @@ fileprivate enum SPMDependency {
     static let networkKit = PackageModel(
         name: "NetworkKit",
         url: "https://github.com/TimurkaevMalik/NetworkKit.git",
-        requirement: .version(.init(1, 7, 0))
+        requirement: .version(.init(1, 3, 0))
     )
     
     static let helpersSharedUnsp = PackageModel(
