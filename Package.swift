@@ -13,12 +13,12 @@ let package = Package(
         .library(name: projNameDynamic, type: .dynamic, targets: [projName]),
     ],
     dependencies: [
-//        .make(from: SPMDependency.snapKitWrapper),
-//        .make(from: SPMDependency.coreKit),
-//        .make(from: SPMDependency.networkKit),
-//        .make(from: SPMDependency.loggingKit),
-//        .make(from: SPMDependency.keychainStorageKit),
-//        .make(from: SPMDependency.helpersSharedUnsp)
+        .make(from: SPMDependency.snapKitWrapper),
+        .make(from: SPMDependency.coreKit),
+        .make(from: SPMDependency.networkKit),
+        .make(from: SPMDependency.loggingKit),
+        .make(from: SPMDependency.keychainStorageKit),
+        .make(from: SPMDependency.helpersSharedUnsp)
     ],
     targets: [
         .target(
