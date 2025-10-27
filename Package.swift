@@ -72,7 +72,7 @@ fileprivate enum SPMDependency {
     static let helpersSharedUnsp = PackageModel(
         name: "HelpersSharedUnsp",
         url: "https://github.com/TimurkaevMalik/HelpersSharedUnsp.git",
-        requirement: .branch("main")
+        requirement: .version(.init(1, 1, 0))
     )
 }
 
