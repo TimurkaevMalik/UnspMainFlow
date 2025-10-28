@@ -13,23 +13,23 @@ let package = Package(
         .library(name: projNameDynamic, type: .dynamic, targets: [projName]),
     ],
     dependencies: [
-        .make(from: SPMDependency.snapKitWrapper),
-        .make(from: SPMDependency.coreKit),
-        .make(from: SPMDependency.networkKit),
-        .make(from: SPMDependency.loggingKit),
-        .make(from: SPMDependency.keychainStorageKit),
-        .make(from: SPMDependency.helpersSharedUnsp)
+//        .make(from: SPMDependency.snapKitWrapper),
+//        .make(from: SPMDependency.coreKit),
+//        .make(from: SPMDependency.networkKit),
+//        .make(from: SPMDependency.loggingKit),
+//        .make(from: SPMDependency.keychainStorageKit),
+//        .make(from: SPMDependency.helpersSharedUnsp)
     ],
     targets: [
         .target(
             name: projName,
             dependencies: [
-                .product(SPMDependency.snapKitWrapper.name),
-                .product(SPMDependency.coreKit.name),
-                .product(SPMDependency.networkKit.name),
-                .product(SPMDependency.loggingKit.name),
-                .product(SPMDependency.keychainStorageKit.name),
-                .product(SPMDependency.helpersSharedUnsp.name)
+//                .product(SPMDependency.snapKitWrapper.name),
+//                .product(SPMDependency.coreKit.name),
+//                .product(SPMDependency.networkKit.name),
+//                .product(SPMDependency.loggingKit.name),
+//                .product(SPMDependency.keychainStorageKit.name),
+//                .product(SPMDependency.helpersSharedUnsp.name)
             ],
             path: projName,
             sources: ["Sources"]
